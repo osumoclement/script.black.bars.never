@@ -34,17 +34,12 @@ class Player(xbmc.Player):
         xbmc.Player.__init__(self)
 
     def onAVStarted(self):
-        xbmc.log("AV started")
+        xbmc.log("AV playback started")
         self.abolishBlackBars()
 
     def CaptureFrame(self):
         capture.capture(CaptureWidth, CaptureHeight)
-        capturedImage = capture.getImage(1000)
-        return capturedImage
-
-    def CaptureFrame_new(self):
-        capture.capture(CaptureWidth, CaptureHeight)
-        capturedImage = capture.getImage(1000)
+        capturedImage = capture.getImage(2000)
         return capturedImage
 
     ##############
@@ -69,6 +64,7 @@ class Player(xbmc.Player):
 
         __imageLine = _bArray[__sliceStart:__sliceEnd]
         __result = all([v < _threshold for v in __imageLine])
+
         return __result
 
     ###############
@@ -95,10 +91,10 @@ class Player(xbmc.Player):
             __middleScreenDark = self.LineColorLessThan(
                 __myimage, 7, 2, __threshold)
             if __middleScreenDark == False:
-                xbmc.sleep(200)
+                xbmc.sleep(1000)
                 break
             else:
-                xbmc.sleep(100)
+                xbmc.sleep(1000)
 
         # Capture another frame. after we have waited for transitions
         __myimage = self.CaptureFrame()
