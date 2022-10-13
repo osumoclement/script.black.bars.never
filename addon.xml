@@ -12,8 +12,6 @@
 		<summary lang="en">BlackBarsNever</summary>
 		<description lang="en">This addon eliminates the problem of black bars. If the black bars are hardcoded, the addon will automatically 
 		detect this and remove them. If the video is a wide screen format, the addon will also detect this and remove the black bars too.
-		
-		For Android, detection of hardcoded black bars is not working currently, we are working to resolve this. All other platforms like Linux, Windows and Apple OS family everything should work correctly
 		</description>
 		<license>GNU General Public License, v2</license>
 		<language></language>
