@@ -2,12 +2,11 @@
 This is an addon that eliminates black bars, whether hardcoded or the video is just wide format
 
 With addon installed and enabled, it will automatically analyze media on playback and determine 
-if there are any black bars or if the video is widescreen. The addon will then apply a vertical zoom 
-on the media until it covers the display.
+if there are any black bars. The addon will then zoom the media until it covers the display.
 
 The picture will not be distorted in any way as the zoom is linear,
 however, on most media, small parts on the left and right will be cut off. Luckily, everything that's 
-important tends to fall in the middle of tbe scene most of the time. The advantage of experiencing a more 
+important tends to fall in the middle of tbe scene most of the time. The advantages of experiencing an 
 immersive picture that fills the periphery should be enough to overweigh the disdvantage of missing sides.
 
 # Supported platforms                          
