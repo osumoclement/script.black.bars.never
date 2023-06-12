@@ -2,31 +2,16 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-import time
-import json
-import sys
-import os.path
-
-addon = xbmcaddon.Addon()
-addonversion = addon.getAddonInfo('version')
-addonid = addon.getAddonInfo('id')
-addonname = addon.getAddonInfo('name')
-addonPath = addon.getAddonInfo('path')
-
 monitor = xbmc.Monitor()
-
-LOG_NONE = 0
-LOG_ERROR = 1
-LOG_INFO = 2
-LOG_DEBUG = 3
-
 capture = xbmc.RenderCapture()
 myplayer = xbmc.Player()
 
 CaptureWidth = 48
 CaptureHeight = 54
 
-messages = []
+
+def notify(msg):
+    xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
 
 
 class Player(xbmc.Player):
@@ -34,7 +19,6 @@ class Player(xbmc.Player):
         xbmc.Player.__init__(self)
 
     def onAVStarted(self):
-        xbmc.log("AV playback started")
         self.abolishBlackBars()
 
     def CaptureFrame(self):
@@ -137,30 +121,18 @@ class Player(xbmc.Player):
             # this is 16:9 and has hard coded black bars
             xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}')
-            messages.append(
-                "Black Bars were detected. Zoomed " + str(zoom_amount))
+            notify(
+                "Black Bars were detected. Zoomed {:0.2f}".format(zoom_amount))
         elif (aspectratio > 178):
             # this is an aspect ratio wider than 16:9, no black bars, we assume a 16:9 (1.77:1) display
             xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}')
             if (zoom_amount <= 1.02):
-                messages.append(
-                    "Wide screen was detected. Slightly zoomed " + str(zoom_amount))
+                notify(
+                    "Wide screen was detected. Slightly zoomed {:0.2f}".format(zoom_amount))
             elif (zoom_amount > 1.02):
-                messages.append(
-                    "Wide screen was detected. Zoomed " + str(zoom_amount))
-
-        # time.sleep(0.1)
-
-    def log(self, level, msg):
-        if level <= settings.logLevel:
-            if level == LOG_ERROR:
-                l = xbmc.LOGERROR
-            elif level == LOG_INFO:
-                l = xbmc.LOGINFO
-            elif level == LOG_DEBUG:
-                l = xbmc.LOGDEBUG
-            xbmc.log(str(msg), l)
+                notify(
+                    "Wide screen was detected. Zoomed {: 0.2f}".format(zoom_amount))
 
 
 p = Player()
@@ -170,9 +142,3 @@ while not monitor.abortRequested():
     if monitor.waitForAbort(10):
         # Abort was requested while waiting. We should exit
         break
-
-    if (len(messages) > 0):
-        xbmcgui.Dialog().notification(
-            "BlackBarsNever", messages[0], None, 5000)
-
-        messages.pop(0)
