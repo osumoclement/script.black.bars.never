@@ -19,7 +19,7 @@ immersive picture that fills the periphery should be enough to overweigh the dis
 # Installation
 Download the zip file from [releases](https://github.com/osumoclement/script.black.bars.never/releases)
 
-Launch Kodi >> Add-ons >> Get More >> .. >> Install from zip file
+Launch Kodi >> Add-ons >> Get More >> Install from zip file
 
 Feel free to ask any questions, submit feature/bug reports
 
