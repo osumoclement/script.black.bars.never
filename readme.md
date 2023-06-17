@@ -1,3 +1,4 @@
+# BlackBarsNever Kodi Addon - Remove black bars
 # How it works
 This is an addon that eliminates black bars on KODI, whether hardcoded or the video is just wide format
 
@@ -23,3 +24,6 @@ Launch Kodi >> Add-ons >> Get More >> .. >> Install from zip file
 Feel free to ask any questions, submit feature/bug reports
 
 Enjoy!
+
+# License
+BlackBarsNever is [GPLv2 licensed](https://github.com/osumoclement/script.black.bars.never/blob/main/LICENSE.txt). You may use, distribute and copy it under the license terms.
