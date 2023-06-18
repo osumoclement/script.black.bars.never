@@ -1,3 +1,5 @@
+import sys
+
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -9,6 +11,8 @@ myplayer = xbmc.Player()
 CaptureWidth = 48
 CaptureHeight = 54
 
+status = "off"
+
 
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
@@ -18,8 +22,21 @@ class Player(xbmc.Player):
     def __init__(self):
         xbmc.Player.__init__(self)
 
+        if "start" in sys.argv:
+            self.abolishBlackBars()
+        elif "stop" in sys.argv:
+            self.showOriginal()
+        elif "toggle" in sys.argv:
+            if status == "on":
+                self.showOriginal()
+            elif status == "off":
+                self.abolishBlackBars()
+        elif "status" in sys.argv:
+            return status
+
     def onAVStarted(self):
-        self.abolishBlackBars()
+        if (bool(xbmcaddon.Addon().getSetting("automatically_execute")) == True):
+            self.abolishBlackBars()
 
     def CaptureFrame(self):
         capture.capture(CaptureWidth, CaptureHeight)
@@ -98,6 +115,8 @@ class Player(xbmc.Player):
         return __aspectratio
 
     def abolishBlackBars(self):
+        status = "on"
+
         aspectratio = self.GetAspectRatioFromFrame()
         aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
 
@@ -133,6 +152,13 @@ class Player(xbmc.Player):
             elif (zoom_amount > 1.02):
                 notify(
                     "Wide screen was detected. Zoomed {: 0.2f}".format(zoom_amount))
+
+    def showOriginal(self):
+        status = "off"
+
+        xbmc.executeJSONRPC(
+            '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"normal": 1.0' + ' }}, "id": 1}')
+        notify("Showing original aspect ratio")
 
 
 p = Player()
