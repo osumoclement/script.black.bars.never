@@ -8,6 +8,13 @@
                     <default>true</default>
                     <control type="toggle"/>
                 </setting>
+                <setting id="toggle_test" type="action" label="32003" help="">
+	                <level>0</level>
+	                <data>RunScript(script.black.bars.never, toggle)</data>
+	                <control type="button" format="action">
+		            <close>true</close>
+	                </control>
+                </setting>
             </group>
         </category>
     </section>

@@ -25,3 +25,7 @@ msgstr "General"
 msgctxt "#32002"
 msgid "Automatically remove black bars"
 msgstr "Automatically remove black bars"
+
+msgctxt "#32003"
+msgid "Toggle status"
+msgstr "Toggle status"

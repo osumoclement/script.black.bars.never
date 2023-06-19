@@ -11,8 +11,6 @@ myplayer = xbmc.Player()
 CaptureWidth = 48
 CaptureHeight = 54
 
-status = "off"
-
 
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
@@ -22,21 +20,17 @@ class Player(xbmc.Player):
     def __init__(self):
         xbmc.Player.__init__(self)
 
-        if "start" in sys.argv:
-            self.abolishBlackBars()
-        elif "stop" in sys.argv:
-            self.showOriginal()
-        elif "toggle" in sys.argv:
-            if status == "on":
+        if "toggle" in sys.argv:
+            if xbmcgui.Window(10000).getProperty('blackbarsnever_status') == "on":
                 self.showOriginal()
-            elif status == "off":
+            else:
                 self.abolishBlackBars()
-        elif "status" in sys.argv:
-            return status
 
     def onAVStarted(self):
-        if (bool(xbmcaddon.Addon().getSetting("automatically_execute")) == True):
+        if (xbmcaddon.Addon().getSetting("automatically_execute") == 'true'):
             self.abolishBlackBars()
+        else:
+            self.showOriginal()
 
     def CaptureFrame(self):
         capture.capture(CaptureWidth, CaptureHeight)
@@ -115,7 +109,8 @@ class Player(xbmc.Player):
         return __aspectratio
 
     def abolishBlackBars(self):
-        status = "on"
+        xbmcgui.Window(10000).setProperty('blackbarsnever_status', "on")
+        # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
         aspectratio = self.GetAspectRatioFromFrame()
         aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
@@ -154,10 +149,11 @@ class Player(xbmc.Player):
                     "Wide screen was detected. Zoomed {: 0.2f}".format(zoom_amount))
 
     def showOriginal(self):
-        status = "off"
+        xbmcgui.Window(10000).setProperty('blackbarsnever_status', "off")
+        # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
         xbmc.executeJSONRPC(
-            '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"normal": 1.0' + ' }}, "id": 1}')
+            '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0' + ' }}, "id": 1}')
         notify("Showing original aspect ratio")
 
 
