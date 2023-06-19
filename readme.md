@@ -23,7 +23,11 @@ Launch Kodi >> Add-ons >> Get More >> Install from zip file
 
 Feel free to ask any questions, submit feature/bug reports
 
-Enjoy!
+# Customization
+There are a few ways to customize the addon
+By default, the addon automatically removes black bars. If you want to change this behavior, you can turn this off in the addon settings. You would then need to manually trigger the addon by manually calling it from elsewhere in Kodi (ie from a Skin) like this `RunScript(script.black.bars.never,toggle)`. You could even map this to a key for convenience
+
+To check the addon status elsewhere from Kodi, use this `xbmcgui.Window(10000).getProperty('blackbarsnever_status')`. The result is either `on` or `off`
 
 # License
 BlackBarsNever is [GPLv2 licensed](https://github.com/osumoclement/script.black.bars.never/blob/main/LICENSE.txt). You may use, distribute and copy it under the license terms.
