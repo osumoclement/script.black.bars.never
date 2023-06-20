@@ -29,3 +29,7 @@ msgstr "Automatically remove black bars"
 msgctxt "#32003"
 msgid "Toggle status"
 msgstr "Toggle status"
+
+msgctxt "#32004"
+msgid "Android workaround (requires internet)"
+msgstr "Android workaround (requires internet)"

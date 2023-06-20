@@ -15,6 +15,11 @@
 		            <close>true</close>
 	                </control>
                 </setting>
+                <setting help="" id="android_workaround" label="32004" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
             </group>
         </category>
     </section>

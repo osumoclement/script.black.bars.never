@@ -4,9 +4,11 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
+from imdb import getOriginalAspectRatio
+
 monitor = xbmc.Monitor()
 capture = xbmc.RenderCapture()
-myplayer = xbmc.Player()
+player = xbmc.Player()
 
 CaptureWidth = 48
 CaptureHeight = 54
@@ -112,8 +114,16 @@ class Player(xbmc.Player):
         xbmcgui.Window(10000).setProperty('blackbarsnever_status', "on")
         # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
+        android_workaround = (xbmcaddon.Addon().getSetting(
+            "automatically_execute") == 'true')
+
         aspectratio = self.GetAspectRatioFromFrame()
-        aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
+
+        if android_workaround:
+            aspectratio2 = getOriginalAspectRatio(
+                xbmc.getInfoLabel('Player.Process(VideoTitle)'))
+        else:
+            aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
 
         _info = xbmc.getInfoLabel('Player.Process(VideoDAR)')
         _info2 = xbmc.getInfoLabel('Player.Process(videoheight)')
