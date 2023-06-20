@@ -37,4 +37,4 @@ By default, the addon automatically removes black bars. If you want to change th
 To check the addon status elsewhere from Kodi, use this `xbmcgui.Window(10000).getProperty('blackbarsnever_status')`. The result is either `on` or `off`
 
 # License
-BlackBarsNever is [GPLv2 licensed](https://github.com/osumoclement/script.black.bars.never/blob/main/LICENSE.txt). You may use, distribute and copy it under the license terms.
+BlackBarsNever is [GPLv3 licensed](https://github.com/osumoclement/script.black.bars.never/blob/main/LICENSE). You may use, distribute and copy it under the license terms.
