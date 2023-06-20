@@ -7,7 +7,7 @@ if there are any black bars. The addon will then zoom the media exactly enough t
 
 The picture will not be distorted in any way as the zoom is linear,
 however, on most media, small parts on the left and right will be cut off. Luckily, everything that's 
-important tends to fall in the middle of tbe scene most of the time. The advantages of experiencing an 
+important tends to fall in the middle of the scene 99% of the time. The advantages of experiencing an 
 immersive picture that fills the periphery should be enough to overweigh the disdvantage of missing sides.
 
 # Supported platforms                          
