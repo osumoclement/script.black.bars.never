@@ -10,7 +10,8 @@ def getOriginalAspectRatio(query):
     URL = BASE_URL + "find/?q={}".format(query)
     searchpage = requests.get(URL, headers=HEADERS)
 
-    soup = BeautifulSoup(searchpage.text, 'lxml')
+    # lxml parser would have been better but not currently supported in Kodi
+    soup = BeautifulSoup(searchpage.text, 'html.parser')
 
     if soup.css.select('.ipc-metadata-list-summary-item__t'):
         # we have matches, pick the first one
@@ -21,7 +22,7 @@ def getOriginalAspectRatio(query):
 
         titlepage = requests.get(URL, headers=HEADERS)
 
-        soup = BeautifulSoup(titlepage.text, 'lxml')
+        soup = BeautifulSoup(titlepage.text, 'html.parser')
 
         aspect_ratio_full = soup.find(
             attrs={"data-testid": "title-techspec_aspectratio"}).css.select(".ipc-metadata-list-item__list-content-item")[0].decode_contents()

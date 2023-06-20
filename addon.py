@@ -1,3 +1,4 @@
+import os
 import sys
 
 import xbmc
@@ -29,7 +30,7 @@ class Player(xbmc.Player):
                 self.abolishBlackBars()
 
     def onAVStarted(self):
-        if (xbmcaddon.Addon().getSetting("automatically_execute") == 'true'):
+        if (xbmcaddon.Addon().getSetting("automatically_execute") == "true"):
             self.abolishBlackBars()
         else:
             self.showOriginal()
@@ -117,16 +118,19 @@ class Player(xbmc.Player):
         android_workaround = (xbmcaddon.Addon().getSetting(
             "android_workaround") == 'true')
 
-        aspectratio = self.GetAspectRatioFromFrame()
-
-        if android_workaround:
-            aspectratio2 = getOriginalAspectRatio(
-                xbmc.getInfoLabel('Player.Process(VideoTitle)'))
+        if android_workaround == True:
+            title = player.getVideoInfoTag().getTitle()
+            if not title:
+                title = player.getVideoInfoTag().getOriginalTitle()
+            if not title:
+                title = os.path.basename(
+                    player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
+            aspectratio = int(getOriginalAspectRatio(title))
         else:
-            aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
+            aspectratio = self.GetAspectRatioFromFrame()
 
-        _info = xbmc.getInfoLabel('Player.Process(VideoDAR)')
-        _info2 = xbmc.getInfoLabel('Player.Process(videoheight)')
+        aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
+
         window_id = xbmcgui.getCurrentWindowId()
         line1 = 'Calculated Aspect Ratio = ' + \
             str(aspectratio) + ' ' + 'Player Aspect Ratio = ' + str(aspectratio2)
