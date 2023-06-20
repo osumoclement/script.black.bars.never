@@ -115,7 +115,7 @@ class Player(xbmc.Player):
         # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
         android_workaround = (xbmcaddon.Addon().getSetting(
-            "automatically_execute") == 'true')
+            "android_workaround") == 'true')
 
         aspectratio = self.GetAspectRatioFromFrame()
 
