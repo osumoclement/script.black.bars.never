@@ -14,14 +14,14 @@ immersive picture that fills the periphery should be enough to overweigh the dis
 - [x] Linux
 - [x] Windows
 - [x] macOS and iOS
-- [ ] Android - It's complicated 🤷
+- [ ] Android & Embedded Systems - It's complicated 🤷
   
-# Android - The problem child
-Currently, Kodi can't capture sreenshots in Android if hardware accelertion is enabled due to some technical limitations. This may change in future and when that happens the addon will work properly like in other platforms. For now there's two options:
+# Android & Embedded Systems like *ELEC
+Currently, Kodi can't capture sreenshots in Android and Embedded Systems if hardware accelertion is enabled due to some technical limitations. This may change in future and when that happens the addon will work properly like in other platforms. For now there's two options:
 
-1) Disable hardware acceleration (turn off MediaCodec Surface). The problem with this is that Kodi will now use CPU for decoding and playback may be affected to the point of being unwatchable, especially for high bitrate media. Also in the devices I tested, HDR won't work on Android if hardware acceleration is turned on, I am not sure if this affects all of Android.
+1) Disable hardware acceleration (turn off MediaCodec Surface in Android). The problem with this is that Kodi will now use CPU for decoding and playback may be affected to the point of being unwatchable, especially for high bitrate media. Also in the devices I tested, HDR won't work on Android if hardware acceleration is turned on, I am not sure if this affects all of Android.
 
-2) Enable the Android workaround from the addon settings. This feature requires an internet connection to fetch media metadata, and works best if your library adopts a decent naming pattern i.e `Title Year`. Also works only if media aspect ratio is unchanged from original
+2) Enable the Android & Embedded Systems Workaround from the addon settings. This feature requires an internet connection to fetch media metadata, and works best if your library adopts a decent naming pattern i.e `Title Year`. Also works properly only if media aspect ratio is unchanged from original
 
 # Installation
 Download the zip file from [releases](https://github.com/osumoclement/script.black.bars.never/releases)
