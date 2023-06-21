@@ -4,7 +4,7 @@ import sys
 import xbmc
 import xbmcaddon
 import xbmcgui
-
+import soupsieve
 from imdb import getOriginalAspectRatio
 
 monitor = xbmc.Monitor()
@@ -125,7 +125,9 @@ class Player(xbmc.Player):
             if not title:
                 title = os.path.basename(
                     player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
-            aspectratio = int(getOriginalAspectRatio(title))
+            original_aspectratio = getOriginalAspectRatio(title)
+
+            aspectratio = int(original_aspectratio)
         else:
             aspectratio = self.GetAspectRatioFromFrame()
 

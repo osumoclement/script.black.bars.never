@@ -13,10 +13,14 @@ def getOriginalAspectRatio(query):
     # lxml parser would have been better but not currently supported in Kodi
     soup = BeautifulSoup(searchpage.text, 'html.parser')
 
-    if soup.css.select('.ipc-metadata-list-summary-item__t'):
+    if soup.select_one('.ipc-metadata-list-summary-item__t'):
         # we have matches, pick the first one
-        title_url = soup.css.select(
+        title_url = soup.select_one(
+            '.ipc-metadata-list-summary-item__t')['href']
+        # this below could have worked instead but for some reason SoupSieve not working inside Kodi
+        """title_url = soup.css.select(
             '.ipc-metadata-list-summary-item__t')[0].get('href')
+            """
 
         URL = BASE_URL + title_url
 
@@ -24,8 +28,14 @@ def getOriginalAspectRatio(query):
 
         soup = BeautifulSoup(titlepage.text, 'html.parser')
 
+        # this below could have worked instead but for some reason SoupSieve not working inside Kodi
         aspect_ratio_full = soup.find(
+            attrs={"data-testid": "title-techspec_aspectratio"}).select_one(".ipc-metadata-list-item__list-content-item").decode_contents()
+
+        """aspect_ratio_full = soup.find(
             attrs={"data-testid": "title-techspec_aspectratio"}).css.select(".ipc-metadata-list-item__list-content-item")[0].decode_contents()
+            """
+
         aspect_ratio = aspect_ratio_full.split(':')[0].replace('.', '')
 
         return aspect_ratio
