@@ -5,7 +5,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import soupsieve
-from imdb import getOriginalAspectRatio
+from imdb import getOriginalaspect_ratio
 
 monitor = xbmc.Monitor()
 capture = xbmc.RenderCapture()
@@ -67,16 +67,16 @@ class Player(xbmc.Player):
 
     ###############
     #
-    # GetAspectRatioFromFrame
+    # Getaspect_ratioFromFrame
     #   - returns Aspect ratio * 100 (i.e. 2.35 = 235)
     #   Detects hardcoded black bars
     ###############
 
-    def GetAspectRatioFromFrame(self):
-        __aspectratio = int((capture.getAspectRatio() + 0.005) * 100)
+    def Getaspect_ratioFromFrame(self):
+        __aspect_ratio = int((capture.getaspect_ratio() + 0.005) * 100)
         __threshold = 25
 
-        line1 = 'Interim Aspect Ratio = ' + str(__aspectratio)
+        line1 = 'Interim Aspect Ratio = ' + str(__aspect_ratio)
         xbmc.log(line1, level=xbmc.LOGINFO)
 
         # screen capture and test for an image that is not dark in the 2.40
@@ -101,15 +101,15 @@ class Player(xbmc.Player):
         __ar235 = self.LineColorLessThan(__myimage, 1, 5, __threshold)
 
         if (__ar235 == True):
-            __aspectratio = 235
+            __aspect_ratio = 235
 
         elif (__ar200 == True):
-            __aspectratio = 200
+            __aspect_ratio = 200
 
         elif (__ar185 == True):
-            __aspectratio = 185
+            __aspect_ratio = 185
 
-        return __aspectratio
+        return __aspect_ratio
 
     def abolishBlackBars(self):
         xbmcgui.Window(10000).setProperty('blackbarsnever_status', "on")
@@ -125,44 +125,45 @@ class Player(xbmc.Player):
         if not title:
             title = os.path.basename(
                 player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
-        original_aspectratio = getOriginalAspectRatio(
+        original_aspect_ratio = getOriginalaspect_ratio(
             title, imdb_number=imdb_number)
-        if isinstance(original_aspectratio, list):
+        if isinstance(original_aspect_ratio, list):
             # media has multiple aspect ratios, so just assume the media reported one
             if android_workaround == True:
                 notify("Multiple aspect ratios detected - will do nothing")
             else:
                 notify("Multiple aspect ratios detected")
 
-            aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
+            aspect_ratio = int((capture.getaspect_ratio() + 0.005) * 100)
         else:
-            aspectratio = int(original_aspectratio)
+            aspect_ratio = int(original_aspect_ratio)
         if android_workaround != True:
-            aspectratio = self.GetAspectRatioFromFrame()
+            aspect_ratio = self.Getaspect_ratioFromFrame()
 
-        aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
+        aspect_ratio2 = int((capture.getaspect_ratio() + 0.005) * 100)
 
         window_id = xbmcgui.getCurrentWindowId()
         line1 = 'Calculated Aspect Ratio = ' + \
-            str(aspectratio) + ' ' + 'Player Aspect Ratio = ' + str(aspectratio2)
+            str(aspect_ratio) + ' ' + \
+            'Player Aspect Ratio = ' + str(aspect_ratio2)
 
         xbmc.log(line1, level=xbmc.LOGINFO)
 
-        if (aspectratio > 178):
-            zoom_amount = (aspectratio / 178)
+        if (aspect_ratio > 178):
+            zoom_amount = (aspect_ratio / 178)
         else:
             zoom_amount = 1.0
 
         # zoom in a sort of animated way, isn't working for now
         iterations = (zoom_amount - 1) / 0.01
         # for x in range(iterations):
-        if (aspectratio > 178) and (aspectratio2 == 178):
+        if (aspect_ratio > 178) and (aspect_ratio2 == 178):
             # this is 16:9 and has hard coded black bars
             xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}')
             notify(
                 "Black Bars were detected. Zoomed {:0.2f}".format(zoom_amount))
-        elif (aspectratio > 178):
+        elif (aspect_ratio > 178):
             # this is an aspect ratio wider than 16:9, no black bars, we assume a 16:9 (1.77:1) display
             xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}')
