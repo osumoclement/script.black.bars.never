@@ -114,6 +114,7 @@ class Player(xbmc.Player):
     def abolishBlackBars(self):
         xbmcgui.Window(10000).setProperty('blackbarsnever_status', "on")
         # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
+        notify(xbmc.getInfoLabel("VideoPlayer.IMDBNumber"))
 
         android_workaround = (xbmcaddon.Addon().getSetting(
             "android_workaround") == 'true')
