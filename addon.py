@@ -5,7 +5,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import soupsieve
-from imdb import getOriginalaspect_ratio
+from imdb import getOriginalAspectRatio
 
 monitor = xbmc.Monitor()
 capture = xbmc.RenderCapture()
@@ -67,13 +67,13 @@ class Player(xbmc.Player):
 
     ###############
     #
-    # Getaspect_ratioFromFrame
+    # GetAspectRatioFromFrame
     #   - returns Aspect ratio * 100 (i.e. 2.35 = 235)
     #   Detects hardcoded black bars
     ###############
 
-    def Getaspect_ratioFromFrame(self):
-        __aspect_ratio = int((capture.getaspect_ratio() + 0.005) * 100)
+    def GetAspectRatioFromFrame(self):
+        __aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
         __threshold = 25
 
         line1 = 'Interim Aspect Ratio = ' + str(__aspect_ratio)
@@ -125,7 +125,7 @@ class Player(xbmc.Player):
         if not title:
             title = os.path.basename(
                 player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
-        original_aspect_ratio = getOriginalaspect_ratio(
+        original_aspect_ratio = getOriginalAspectRatio(
             title, imdb_number=imdb_number)
         if isinstance(original_aspect_ratio, list):
             # media has multiple aspect ratios, so just assume the media reported one
@@ -134,13 +134,13 @@ class Player(xbmc.Player):
             else:
                 notify("Multiple aspect ratios detected")
 
-            aspect_ratio = int((capture.getaspect_ratio() + 0.005) * 100)
+            aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
         else:
             aspect_ratio = int(original_aspect_ratio)
         if android_workaround != True:
-            aspect_ratio = self.Getaspect_ratioFromFrame()
+            aspect_ratio = self.GetAspectRatioFromFrame()
 
-        aspect_ratio2 = int((capture.getaspect_ratio() + 0.005) * 100)
+        aspect_ratio2 = int((capture.getAspectRatio() + 0.005) * 100)
 
         window_id = xbmcgui.getCurrentWindowId()
         line1 = 'Calculated Aspect Ratio = ' + \
