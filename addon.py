@@ -130,7 +130,7 @@ class Player(xbmc.Player):
         if isinstance(original_aspect_ratio, list):
             # media has multiple aspect ratios, so just assume the media reported one
             if android_workaround == True:
-                notify("Multiple aspect ratios detected - will do nothing")
+                notify("Multiple aspect ratios detected")
             else:
                 notify("Multiple aspect ratios detected")
 
