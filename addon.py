@@ -114,21 +114,27 @@ class Player(xbmc.Player):
     def abolishBlackBars(self):
         xbmcgui.Window(10000).setProperty('blackbarsnever_status', "on")
         # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
-        notify(xbmc.getInfoLabel("VideoPlayer.IMDBNumber"))
 
         android_workaround = (xbmcaddon.Addon().getSetting(
             "android_workaround") == 'true')
 
         if android_workaround == True:
+            imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
             title = player.getVideoInfoTag().getTitle()
             if not title:
                 title = player.getVideoInfoTag().getOriginalTitle()
             if not title:
                 title = os.path.basename(
                     player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
-            original_aspectratio = getOriginalAspectRatio(title)
+            original_aspectratio = getOriginalAspectRatio(
+                title, imdb_number=imdb_number)
 
-            aspectratio = int(original_aspectratio)
+            if isinstance(original_aspectratio, list):
+                # media has multiple aspect ratios, so just assume the media reported one
+                notify("Multiple aspect ratios detected, will do nothing")
+                aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
+            else:
+                aspectratio = int(original_aspectratio)
         else:
             aspectratio = self.GetAspectRatioFromFrame()
 
