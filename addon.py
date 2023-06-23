@@ -118,24 +118,26 @@ class Player(xbmc.Player):
         android_workaround = (xbmcaddon.Addon().getSetting(
             "android_workaround") == 'true')
 
-        if android_workaround == True:
-            imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
-            title = player.getVideoInfoTag().getTitle()
-            if not title:
-                title = player.getVideoInfoTag().getOriginalTitle()
-            if not title:
-                title = os.path.basename(
-                    player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
-            original_aspectratio = getOriginalAspectRatio(
-                title, imdb_number=imdb_number)
-
-            if isinstance(original_aspectratio, list):
-                # media has multiple aspect ratios, so just assume the media reported one
-                notify("Multiple aspect ratios detected, will do nothing")
-                aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
+        imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
+        title = player.getVideoInfoTag().getTitle()
+        if not title:
+            title = player.getVideoInfoTag().getOriginalTitle()
+        if not title:
+            title = os.path.basename(
+                player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
+        original_aspectratio = getOriginalAspectRatio(
+            title, imdb_number=imdb_number)
+        if isinstance(original_aspectratio, list):
+            # media has multiple aspect ratios, so just assume the media reported one
+            if android_workaround == True:
+                notify("Multiple aspect ratios detected - will do nothing")
             else:
-                aspectratio = int(original_aspectratio)
+                notify("Multiple aspect ratios detected")
+
+            aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
         else:
+            aspectratio = int(original_aspectratio)
+        if android_workaround != True:
             aspectratio = self.GetAspectRatioFromFrame()
 
         aspectratio2 = int((capture.getAspectRatio() + 0.005) * 100)
