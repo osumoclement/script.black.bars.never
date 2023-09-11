@@ -5,6 +5,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import soupsieve
+
 from imdb import getOriginalAspectRatio
 
 monitor = xbmc.Monitor()
@@ -13,7 +14,6 @@ player = xbmc.Player()
 
 CaptureWidth = 48
 CaptureHeight = 54
-
 
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
@@ -84,18 +84,20 @@ class Player(xbmc.Player):
         # is not dark
         while (True):
             __myimage = self.CaptureFrame()
+
             xbmc.log(line1, level=xbmc.LOGINFO)
 
             __middleScreenDark = self.LineColorLessThan(
                 __myimage, 7, 2, __threshold)
             if __middleScreenDark == False:
-                xbmc.sleep(1000)
+                # xbmc.sleep(1000)
                 break
             else:
-                xbmc.sleep(1000)
+                pass
+                # xbmc.sleep(1000)
 
         # Capture another frame. after we have waited for transitions
-        __myimage = self.CaptureFrame()
+        # __myimage = self.CaptureFrame()
         __ar185 = self.LineColorLessThan(__myimage, 0, 1, __threshold)
         __ar200 = self.LineColorLessThan(__myimage, 1, 3, __threshold)
         __ar235 = self.LineColorLessThan(__myimage, 1, 5, __threshold)
@@ -115,6 +117,7 @@ class Player(xbmc.Player):
         xbmcgui.Window(10000).setProperty('blackbarsnever_status', "on")
         # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
+        original_aspect_ratio = None
         android_workaround = (xbmcaddon.Addon().getSetting(
             "android_workaround") == 'true')
 
@@ -125,21 +128,24 @@ class Player(xbmc.Player):
         if not title:
             title = os.path.basename(
                 player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
+
         original_aspect_ratio = getOriginalAspectRatio(
-            title, imdb_number=imdb_number)
+                title, imdb_number=imdb_number)
+        
         if isinstance(original_aspect_ratio, list):
-            # media has multiple aspect ratios, so just assume the media reported one
-            if android_workaround == True:
-                notify("Multiple aspect ratios detected")
-            else:
-                notify("Multiple aspect ratios detected")
-
-            aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
+            # media has multiple aspect ratios, show unaltered and let user do manual intervention
+            notify("Multiple aspect ratios detected")
         else:
-            aspect_ratio = int(original_aspect_ratio)
-        if android_workaround != True:
-            aspect_ratio = self.GetAspectRatioFromFrame()
+            if android_workaround:                
+                aspect_ratio = int(original_aspect_ratio)
 
+                self.doStiaff(aspect_ratio)
+            else:
+                aspect_ratio = self.GetAspectRatioFromFrame()
+                self.doStiaff(aspect_ratio)
+
+    def doStiaff(self, ratio):
+        aspect_ratio = ratio
         aspect_ratio2 = int((capture.getAspectRatio() + 0.005) * 100)
 
         window_id = xbmcgui.getCurrentWindowId()
