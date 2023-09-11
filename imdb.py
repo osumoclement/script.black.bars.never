@@ -12,30 +12,28 @@ def getOriginalAspectRatio(title, imdb_number=None):
     HEADERS = {
         'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'}
 
-    """
-    if imdb_number:
+    if imdb_number and str(imdb_number).startswith("tt"):
         URL = "{}/title/{}/".format(BASE_URL, imdb_number)
     else:
-    """
-    URL = BASE_URL + "find/?q={}".format(title)
-    search_page = requests.get(URL, headers=HEADERS)
+        URL = BASE_URL + "find/?q={}".format(title)
+        search_page = requests.get(URL, headers=HEADERS)
 
-    # lxml parser would have been better but not currently supported in Kodi
-    soup = BeautifulSoup(search_page.text, 'html.parser')
+        # lxml parser would have been better but not currently supported in Kodi
+        soup = BeautifulSoup(search_page.text, 'html.parser')
 
-    title_url_tag = soup.select_one(
-        '.ipc-metadata-list-summary-item__t')
-    if title_url_tag:
-        # we have matches, pick the first one
-        title_url = title_url_tag['href']
-        imdb_number = title_url.rsplit(
-            '/title/', 1)[-1].split("/")[0]
-        # this below could have worked instead but for some reason SoupSieve not working inside Kodi
-        """title_url = soup.css.select(
-            '.ipc-metadata-list-summary-item__t')[0].get('href')
-            """
+        title_url_tag = soup.select_one(
+            '.ipc-metadata-list-summary-item__t')
+        if title_url_tag:
+            # we have matches, pick the first one
+            title_url = title_url_tag['href']
+            imdb_number = title_url.rsplit(
+                '/title/', 1)[-1].split("/")[0]
+            # this below could have worked instead but for some reason SoupSieve not working inside Kodi
+            """title_url = soup.css.select(
+                '.ipc-metadata-list-summary-item__t')[0].get('href')
+                """
 
-        URL = BASE_URL + title_url
+            URL = BASE_URL + title_url
 
     title_page = requests.get(URL, headers=HEADERS)
     soup = BeautifulSoup(title_page.text, 'html.parser')
