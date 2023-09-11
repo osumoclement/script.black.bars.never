@@ -32,6 +32,7 @@ Feel free to ask any questions, submit feature/bug reports
 
 # Multiple Aspect Ratios in Media
 For media with multiple aspect ratios, the addon will notify you of this, and will do nothing. In such cases, I recommend you watch the media as is, since if you change the aspect ratio manually, you may not know where in the media the ratio changes in order to adjust again.
+This feature requires internet to work
 
 # Customization
 There are a few ways to customize the addon

@@ -136,7 +136,7 @@ class Player(xbmc.Player):
             # media has multiple aspect ratios, show unaltered and let user do manual intervention
             notify("Multiple aspect ratios detected")
         else:
-            if android_workaround:                
+            if android_workaround and original_aspect_ratio:                
                 aspect_ratio = int(original_aspect_ratio)
 
                 self.doStiaff(aspect_ratio)
