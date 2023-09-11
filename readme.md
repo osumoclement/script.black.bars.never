@@ -14,7 +14,7 @@ immersive picture that fills the periphery should be enough to overweigh the dis
 - [x] Linux
 - [x] Windows
 - [x] macOS and iOS
-- [ ] Android & Embedded Systems - It's complicated 🤷
+- [x] Android & Embedded Systems - with workaround method
   
 # Android & Embedded Systems like *ELEC
 Currently, Kodi can't capture sreenshots in Android and Embedded Systems if hardware accelertion is enabled due to some technical limitations. This may change in future and when that happens the addon will work properly like in other platforms. For now there's two options:
