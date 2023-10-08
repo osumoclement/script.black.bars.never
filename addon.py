@@ -15,6 +15,7 @@ player = xbmc.Player()
 CaptureWidth = 48
 CaptureHeight = 54
 
+
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
 
@@ -24,13 +25,13 @@ class Player(xbmc.Player):
         xbmc.Player.__init__(self)
 
         if "toggle" in sys.argv:
-            if xbmcgui.Window(10000).getProperty('blackbarsnever_status') == "on":
+            if xbmcgui.Window(10000).getProperty("blackbarsnever_status") == "on":
                 self.showOriginal()
             else:
                 self.abolishBlackBars()
 
     def onAVStarted(self):
-        if (xbmcaddon.Addon().getSetting("automatically_execute") == "true"):
+        if xbmcaddon.Addon().getSetting("automatically_execute") == "true":
             self.abolishBlackBars()
         else:
             self.showOriginal()
@@ -56,7 +57,7 @@ class Player(xbmc.Player):
 
         # zero out the alpha channel
         i = __sliceStart + 3
-        while (i < __sliceEnd):
+        while i < __sliceEnd:
             _bArray[i] &= 0x00
             i += 4
 
@@ -76,19 +77,18 @@ class Player(xbmc.Player):
         __aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
         __threshold = 25
 
-        line1 = 'Interim Aspect Ratio = ' + str(__aspect_ratio)
+        line1 = "Interim Aspect Ratio = " + str(__aspect_ratio)
         xbmc.log(line1, level=xbmc.LOGINFO)
 
         # screen capture and test for an image that is not dark in the 2.40
         # aspect ratio area. keep on capturing images until captured image
         # is not dark
-        while (True):
+        while True:
             __myimage = self.CaptureFrame()
 
             xbmc.log(line1, level=xbmc.LOGINFO)
 
-            __middleScreenDark = self.LineColorLessThan(
-                __myimage, 7, 2, __threshold)
+            __middleScreenDark = self.LineColorLessThan(__myimage, 7, 2, __threshold)
             if __middleScreenDark == False:
                 # xbmc.sleep(1000)
                 break
@@ -102,41 +102,49 @@ class Player(xbmc.Player):
         __ar200 = self.LineColorLessThan(__myimage, 1, 3, __threshold)
         __ar235 = self.LineColorLessThan(__myimage, 1, 5, __threshold)
 
-        if (__ar235 == True):
+        if __ar235 == True:
             __aspect_ratio = 235
 
-        elif (__ar200 == True):
+        elif __ar200 == True:
             __aspect_ratio = 200
 
-        elif (__ar185 == True):
+        elif __ar185 == True:
             __aspect_ratio = 185
 
         return __aspect_ratio
 
     def abolishBlackBars(self):
-        xbmcgui.Window(10000).setProperty('blackbarsnever_status', "on")
+        xbmcgui.Window(10000).setProperty("blackbarsnever_status", "on")
         # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
         original_aspect_ratio = None
-        android_workaround = (xbmcaddon.Addon().getSetting(
-            "android_workaround") == 'true')
+        android_workaround = (
+            xbmcaddon.Addon().getSetting("android_workaround") == "true"
+        )
 
         imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
-        title = player.getVideoInfoTag().getTitle()
-        if not title:
-            title = player.getVideoInfoTag().getOriginalTitle()
-        if not title:
-            title = os.path.basename(
-                player.getVideoInfoTag().getFilenameAndPath()).split('/')[-1].split(".", 1)[0]
+        if player.getVideoInfoTag().getMediaType() == "episode":
+            # media is a TV show
+            title = player.getVideoInfoTag().getTVShowTitle()
+        else:
+            # media is probably a film
+            title = player.getVideoInfoTag().getTitle()
+            if not title:
+                title = player.getVideoInfoTag().getOriginalTitle()
+            if not title:
+                title = (
+                    os.path.basename(player.getVideoInfoTag().getFilenameAndPath())
+                    .split("/")[-1]
+                    .split(".", 1)[0]
+                )
 
-        original_aspect_ratio = getOriginalAspectRatio(
-                title, imdb_number=imdb_number)
-        
+        original_aspect_ratio = getOriginalAspectRatio(title, imdb_number=imdb_number)
+
         if isinstance(original_aspect_ratio, list):
             # media has multiple aspect ratios, show unaltered and let user do manual intervention
             notify("Multiple aspect ratios detected")
         else:
-            if android_workaround and original_aspect_ratio:                
+            if android_workaround and original_aspect_ratio:
                 aspect_ratio = int(original_aspect_ratio)
 
                 self.doStiaff(aspect_ratio)
@@ -149,14 +157,18 @@ class Player(xbmc.Player):
         aspect_ratio2 = int((capture.getAspectRatio() + 0.005) * 100)
 
         window_id = xbmcgui.getCurrentWindowId()
-        line1 = 'Calculated Aspect Ratio = ' + \
-            str(aspect_ratio) + ' ' + \
-            'Player Aspect Ratio = ' + str(aspect_ratio2)
+        line1 = (
+            "Calculated Aspect Ratio = "
+            + str(aspect_ratio)
+            + " "
+            + "Player Aspect Ratio = "
+            + str(aspect_ratio2)
+        )
 
         xbmc.log(line1, level=xbmc.LOGINFO)
 
-        if (aspect_ratio > 178):
-            zoom_amount = (aspect_ratio / 178)
+        if aspect_ratio > 178:
+            zoom_amount = aspect_ratio / 178
         else:
             zoom_amount = 1.0
 
@@ -166,26 +178,35 @@ class Player(xbmc.Player):
         if (aspect_ratio > 178) and (aspect_ratio2 == 178):
             # this is 16:9 and has hard coded black bars
             xbmc.executeJSONRPC(
-                '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}')
-            notify(
-                "Black Bars were detected. Zoomed {:0.2f}".format(zoom_amount))
-        elif (aspect_ratio > 178):
+                '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": '
+                + str(zoom_amount)
+                + ' }}, "id": 1}'
+            )
+            notify("Black Bars were detected. Zoomed {:0.2f}".format(zoom_amount))
+        elif aspect_ratio > 178:
             # this is an aspect ratio wider than 16:9, no black bars, we assume a 16:9 (1.77:1) display
             xbmc.executeJSONRPC(
-                '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}')
-            if (zoom_amount <= 1.02):
+                '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": '
+                + str(zoom_amount)
+                + ' }}, "id": 1}'
+            )
+            if zoom_amount <= 1.02:
                 notify(
-                    "Wide screen was detected. Slightly zoomed {:0.2f}".format(zoom_amount))
-            elif (zoom_amount > 1.02):
-                notify(
-                    "Wide screen was detected. Zoomed {: 0.2f}".format(zoom_amount))
+                    "Wide screen was detected. Slightly zoomed {:0.2f}".format(
+                        zoom_amount
+                    )
+                )
+            elif zoom_amount > 1.02:
+                notify("Wide screen was detected. Zoomed {: 0.2f}".format(zoom_amount))
 
     def showOriginal(self):
-        xbmcgui.Window(10000).setProperty('blackbarsnever_status', "off")
+        xbmcgui.Window(10000).setProperty("blackbarsnever_status", "off")
         # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
         xbmc.executeJSONRPC(
-            '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0' + ' }}, "id": 1}')
+            '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0'
+            + ' }}, "id": 1}'
+        )
         notify("Showing original aspect ratio")
 
 
