@@ -233,17 +233,13 @@ class Player(xbmc.Player):
             zoom_amount = float(monitor_height) / float(effective_video_height)
 
         xbmc.log("Zoom amount: {:.3f}".format(zoom_amount), level=xbmc.LOGINFO)
-
+        
         # Notify the user of the action taken
-        if zoom_amount > 1.0:
-            # Execute the zoom via JSON-RPC
-            xbmc.executeJSONRPC(
+        # Execute the zoom via JSON-RPC
+        xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
-            notify("Adjusted zoom to {:.3f}".format(zoom_amount))
-        else:
-            notify("No zoom adjustment needed.")
-
+        notify("Adjusted zoom to {:.3f}".format(zoom_amount))
 
     def showOriginal(self):
         xbmcgui.Window(10000).setProperty("blackbarsnever_status", "off")
