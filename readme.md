@@ -1,5 +1,5 @@
 # BlackBarsNever Kodi Addon - Remove black bars
-
+Forked by Nircniv
 # How it works
 
 This is an addon that eliminates black bars on KODI, whether hardcoded or the video is just wide format
@@ -25,11 +25,9 @@ Currently, Kodi can't capture sreenshots in Android and Embedded Systems if hard
 
 1. Disable hardware acceleration (turn off MediaCodec Surface in Android). The problem with this is that Kodi will now use CPU for decoding and playback may be affected to the point of being unwatchable, especially for high bitrate media. Also in the devices I tested, HDR won't work on Android if hardware acceleration is turned on, I am not sure if this affects all of Android.
 
-2. Enable the Android & Embedded Systems Workaround from the addon settings. This feature requires an internet connection to fetch media metadata, and works best if your library adopts a decent naming pattern i.e `Title Year`. Also works properly only if media aspect ratio is unchanged from original (i.e has not been cropped from the original)
-
 # Installation
 
-Download the zip file from [releases](https://github.com/osumoclement/script.black.bars.never/releases)
+Download the zip file from [releases](https://github.com/ngtawei/script.black.bars.never/releases)
 
 Launch Kodi >> Add-ons >> Get More >> Install from zip file
 
@@ -51,4 +49,4 @@ To check the addon status elsewhere from Kodi, use this `xbmcgui.Window(10000).g
 
 # License
 
-BlackBarsNever is [GPLv3 licensed](https://github.com/osumoclement/script.black.bars.never/blob/main/LICENSE). You may use, distribute and copy it under the license terms.
+BlackBarsNever is [GPLv3 licensed](https://github.com/ngtawei/script.black.bars.never/blob/main/LICENSE). You may use, distribute and copy it under the license terms.

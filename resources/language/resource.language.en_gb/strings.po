@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Black Bars Never\n"
-"Report-Msgid-Bugs-To: Clement Osumo\n"
+"Report-Msgid-Bugs-To: Nircniv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2023-06-18 10:08+0000\n"
 "Last-Translator: Clement Osumo\n"
