@@ -17,6 +17,11 @@ class Player(xbmc.Player):
     def __init__(self):
         xbmc.Player.__init__(self)
 
+        self.height_scale = 1.0
+        self.width_scale = 1.0
+        self.horizontal_bars_exists = False
+        self.vertical_bars_exists = False
+
         if "toggle" in sys.argv:
             if xbmcgui.Window(10000).getProperty("blackbarsnever_status") == "on":
                 self.showOriginal()
@@ -59,6 +64,7 @@ class Player(xbmc.Player):
             video_player_width, video_player_height = self.getMonitorSize()
             video_player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
             xbmc.log(f"Video Player Aspect Ratio: {video_player_ar}", xbmc.LOGINFO)
+
             video_player_width = int(float(video_player_height) * video_player_ar)
 
             video_player_width = video_player_width
@@ -189,6 +195,14 @@ class Player(xbmc.Player):
         content_height = bottom - top + 1 if top is not None and bottom is not None else 0
         content_width = right - left + 1 if left is not None and right is not None else 0
 
+        self.horizontal_bars_exists = min(top, bottom) != 0
+        self.vertical_bars_exists = min(left, right) != 0
+
+        if (self.horizontal_bars_exists and self.vertical_bars_exists):
+            self.height_scale = content_height / image_height
+            self.width_scale = content_width / image_width
+            xbmc.log(f"Letterbox detected! Height scale: {self.height_scale} Width scale: {self.width_scale}")
+
         # Calculate the aspect ratio of the video content
         if content_height > 0 and content_width > 0:
             __aspect_ratio = content_width / content_height
@@ -213,28 +227,48 @@ class Player(xbmc.Player):
         monitor_ar = monitor_width / monitor_height
         xbmc.log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
         video_player_dimensions = self.getVideoPlayerDimensions()
-
-        if video_player_dimensions is None:
-            return
         
         video_player_width, video_player_height = video_player_dimensions
 
-        # If content aspect ratio is wider than monitor aspect ratio
-        if (content_ar > monitor_ar):
-            # Remove vertical black bars
-            effective_video_width = float(video_player_height) / content_ar
-            xbmc.log(f"Effective Video Width: {effective_video_width}", level=xbmc.LOGINFO)
-
-            # Calculate the required zoom level to match the video content height to the monitor height
-            zoom_amount = float(monitor_width) / float(effective_video_width)
+        if (content_ar < monitor_ar):
+            # Screen Height is filled
+            if (self.vertical_bars_exists and not self.horizontal_bars_exists):
+                # No zoom because screen is already filled
+                zoom_amount = 1.0
+            elif (self.horizontal_bars_exists and not self.vertical_bars_exists):
+                # Remove horizontal black bars
+                # Calculate the effective height of the video content (excluding hardcoded black bars)
+                effective_video_height = float(video_player_width) / content_ar
+                xbmc.log(f"Effective Video height: {effective_video_height}", level=xbmc.LOGINFO)
+                zoom_amount = float(monitor_height) / float(effective_video_height)
+            elif (self.vertical_bars_exists and self.horizontal_bars_exists):
+                # Letterbox
+                # Fill screen height
+                effective_video_height = (float(video_player_width)*self.width_scale) / content_ar
+                xbmc.log(f"Effective Video height: {effective_video_height}", level=xbmc.LOGINFO)
+                zoom_amount = float(monitor_height) / float(effective_video_height)
+            else:
+                # No black bars
+                zoom_amount = 1.0
         else:
-            # Remove horizontal black bars
-            # Calculate the effective height of the video content (excluding hardcoded black bars)
-            effective_video_height = float(video_player_width) / content_ar
-            xbmc.log(f"Effective Video height: {effective_video_height}", level=xbmc.LOGINFO)
-
-            # Calculate the required zoom level to match the video content height to the monitor height
-            zoom_amount = float(monitor_height) / float(effective_video_height)
+            # Screen Width is filled
+            if (self.vertical_bars_exists and not self.horizontal_bars_exists):
+                # Remove vertical black bars
+                effective_video_width = float(video_player_height) * content_ar
+                xbmc.log(f"Effective Video width: {effective_video_width}", level=xbmc.LOGINFO)
+                zoom_amount = float(monitor_width) / float(effective_video_width)
+            elif (self.horizontal_bars_exists and not self.vertical_bars_exists):
+                # No zoom because screen is already filled
+                zoom_amount = 1.0
+            elif (self.vertical_bars_exists and self.horizontal_bars_exists):
+                # Letterbox
+                # Fill screen width
+                effective_video_width = (float(video_player_height)*self.height_scale) * content_ar
+                xbmc.log(f"Effective Video width: {effective_video_width}", level=xbmc.LOGINFO)
+                zoom_amount = float(monitor_width) / float(effective_video_width)
+            else:
+                # No black bars
+                zoom_amount = 1.0
 
         xbmc.log("Zoom amount: {:.3f}".format(zoom_amount), level=xbmc.LOGINFO)
         
