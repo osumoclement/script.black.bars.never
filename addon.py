@@ -61,14 +61,18 @@ class Player(xbmc.Player):
     def getVideoPlayerDimensions(self):
         # Check if a video is currently playing
         if self.isPlayingVideo():
-            video_player_width, video_player_height = self.getMonitorSize()
+            monitor_width, monitor_height = self.getMonitorSize()
+            monitor_ar = monitor_width / monitor_height
+
+            video_player_width, video_player_height = monitor_width, monitor_height
             video_player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
             xbmc.log(f"Video Player Aspect Ratio: {video_player_ar}", xbmc.LOGINFO)
 
-            video_player_width = int(float(video_player_height) * video_player_ar)
+            if (monitor_ar > video_player_ar):
+                video_player_width = int(float(video_player_height) * video_player_ar)
+            else:
+                video_player_height = int(float(video_player_width) / video_player_ar)
 
-            video_player_width = video_player_width
-            video_player_height = video_player_height
             xbmc.log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
             return video_player_width, video_player_height
         else:
@@ -226,9 +230,7 @@ class Player(xbmc.Player):
         monitor_width, monitor_height = self.getMonitorSize()
         monitor_ar = monitor_width / monitor_height
         xbmc.log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
-        video_player_dimensions = self.getVideoPlayerDimensions()
-        
-        video_player_width, video_player_height = video_player_dimensions
+        video_player_width, video_player_height = self.getVideoPlayerDimensions()
 
         if (content_ar < monitor_ar):
             # Screen Height is filled
