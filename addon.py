@@ -33,7 +33,7 @@ class Player(xbmc.Player):
         capture.capture(capture_width, capture_height)
         capturedImage = capture.getImage(2000)
         return capturedImage
-    
+
     def calculateAverageBrightness(self, img_data, image_width, image_height):
         total_brightness = 0
         for i in range(0, len(img_data), 4):  # Step through each pixel
@@ -49,7 +49,7 @@ class Player(xbmc.Player):
         height = int(xbmc.getInfoLabel('System.ScreenHeight'))
 
         if width is None or height is None:
-            xbmc.log("NeverBlackBars: Unable to get Monitor Size.")
+            xbmc.log("NeverBlackBars: Unable to get Monitor Size.", xbmc.LOGERROR)
             return None
         return width, height
     
@@ -57,16 +57,14 @@ class Player(xbmc.Player):
         # Check if a video is currently playing
         if self.isPlayingVideo():
             video_player_width, video_player_height = self.getMonitorSize()
-            video_player_width = int(float(video_player_height) * 1.78)
+            video_player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
+            xbmc.log(f"Video Player Aspect Ratio: {video_player_ar}", xbmc.LOGINFO)
+            video_player_width = int(float(video_player_height) * video_player_ar)
 
-            try:
-                video_player_width = int(video_player_width)
-                video_player_height = int(video_player_height)
-                xbmc.log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
-                return video_player_width, video_player_height
-            except ValueError:
-                # If conversion to int fails, log the failure and wait before retrying
-                xbmc.log(f"Failed to retrieve valid video player dimensions.", level=xbmc.LOGERROR)
+            video_player_width = video_player_width
+            video_player_height = video_player_height
+            xbmc.log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
+            return video_player_width, video_player_height
         else:
             # If no video is playing, log this status
             xbmc.log(f"No video is currently playing.", level=xbmc.LOGINFO)
@@ -123,15 +121,14 @@ class Player(xbmc.Player):
         attempts = 0
         brightness_threshold = 10
 
-        # capture_width, capture_height = 80, 45
         video_w_str = xbmc.getInfoLabel('Player.Process(videowidth)')
         video_h_str = xbmc.getInfoLabel('Player.Process(videoheight)')
 
         video_w = int(video_w_str.replace(",", ""))
         video_h = int(video_h_str.replace(",", ""))
         xbmc.log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
-        video_ar = video_w / video_h
-        image_height = 360
+        video_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
+        image_height = 480
         image_width = int(image_height*video_ar)
 
         while attempts < max_attempts:
@@ -211,9 +208,10 @@ class Player(xbmc.Player):
         self.doStiaff(aspect_ratio)
 
 
-    def doStiaff(self, ratio):
-        content_aspect_ratio = ratio
+    def doStiaff(self, content_ar):
         monitor_width, monitor_height = self.getMonitorSize()
+        monitor_ar = monitor_width / monitor_height
+        xbmc.log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
         video_player_dimensions = self.getVideoPlayerDimensions()
 
         if video_player_dimensions is None:
@@ -221,16 +219,19 @@ class Player(xbmc.Player):
         
         video_player_width, video_player_height = video_player_dimensions
 
-        xbmc.log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
+        # If content aspect ratio is wider than monitor aspect ratio
+        if (content_ar > monitor_ar):
+            # Remove vertical black bars
+            pass
+        else:
+            # Remove horizontal black bars
+            # Calculate the effective height of the video content (excluding hardcoded black bars)
+            effective_video_height = float(video_player_width) / content_ar
+            xbmc.log(f"Effective Video height: {effective_video_height}", level=xbmc.LOGINFO)
 
-        # Calculate the effective height of the video content (excluding hardcoded black bars)
-        effective_video_height = float(video_player_width) / content_aspect_ratio
-        xbmc.log("Effective Video height: {}".format(effective_video_height), level=xbmc.LOGINFO)
+            # Calculate the required zoom level to match the video content height to the monitor height
+            zoom_amount = float(monitor_height) / float(effective_video_height)
 
-         # Calculate the required zoom level to match the video content height to the monitor height
-        zoom_amount = float(monitor_height) / float(effective_video_height)
-        zoom_compensator = 1.075
-        zoom_amount = round(zoom_amount * zoom_compensator, 3)
         xbmc.log("Zoom amount: {:.3f}".format(zoom_amount), level=xbmc.LOGINFO)
 
         # Notify the user of the action taken
