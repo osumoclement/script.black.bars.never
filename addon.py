@@ -1,24 +1,17 @@
 import os
 import sys
+import time
 
 import xbmc
 import xbmcaddon
 import xbmcgui
-import soupsieve
-
-from imdb import getOriginalAspectRatio
 
 monitor = xbmc.Monitor()
 capture = xbmc.RenderCapture()
 player = xbmc.Player()
 
-CaptureWidth = 48
-CaptureHeight = 54
-
-
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
-
 
 class Player(xbmc.Player):
     def __init__(self):
@@ -36,184 +29,230 @@ class Player(xbmc.Player):
         else:
             self.showOriginal()
 
-    def CaptureFrame(self):
-        capture.capture(CaptureWidth, CaptureHeight)
+    def CaptureFrame(self, capture_width, capture_height):
+        capture.capture(capture_width, capture_height)
         capturedImage = capture.getImage(2000)
         return capturedImage
+    
+    def calculateAverageBrightness(self, img_data, image_width, image_height):
+        total_brightness = 0
+        for i in range(0, len(img_data), 4):  # Step through each pixel
+            # Calculate brightness of each pixel
+            brightness = 0.299*img_data[i+2] + 0.587*img_data[i+1] + 0.114*img_data[i]
+            total_brightness += brightness
+        average_brightness = total_brightness / (image_width * image_height)
+        return average_brightness
+    
+    def getMonitorSize(self):
+        # Get the width and height of the current Kodi window
+        width = int(xbmc.getInfoLabel('System.ScreenWidth'))
+        height = int(xbmc.getInfoLabel('System.ScreenHeight'))
 
-    ##############
-    #
-    # LineColorLessThan
-    #    _bArray: byte Array that contains the data we want to test
-    #    _lineStart: where to start testing
-    #    _lineCount: how many lines to test
-    #    _threshold: value to determine testing
-    # returns: True False
-    ###############
+        if width is None or height is None:
+            xbmc.log("NeverBlackBars: Unable to get Monitor Size.")
+            return None
+        return width, height
+    
+    def getVideoPlayerDimensions(self):
+        # Check if a video is currently playing
+        if self.isPlayingVideo():
+            video_player_width, video_player_height = self.getMonitorSize()
+            video_player_width = int(float(video_player_height) * 1.78)
 
-    def LineColorLessThan(self, _bArray, _lineStart, _lineCount, _threshold):
-        __sliceStart = _lineStart * CaptureWidth * 4
-        __sliceEnd = (_lineStart + _lineCount) * CaptureWidth * 4
+            try:
+                video_player_width = int(video_player_width)
+                video_player_height = int(video_player_height)
+                xbmc.log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
+                return video_player_width, video_player_height
+            except ValueError:
+                # If conversion to int fails, log the failure and wait before retrying
+                xbmc.log(f"Failed to retrieve valid video player dimensions.", level=xbmc.LOGERROR)
+        else:
+            # If no video is playing, log this status
+            xbmc.log(f"No video is currently playing.", level=xbmc.LOGINFO)
+        
+        # If the function fails to retrieve dimensions, log an error.
+        xbmc.log("Error retrieving video player dimensions. Terminating.", level=xbmc.LOGERROR)
+        return None
 
-        # zero out the alpha channel
-        i = __sliceStart + 3
-        while i < __sliceEnd:
-            _bArray[i] &= 0x00
-            i += 4
+    def LineColorGreaterThan(self, _bArray, _lineIndex, _imageWidth, _imageHeight, _threshold):
+        bytesPerRow = _imageWidth * 4
+        __sliceStart = _lineIndex * bytesPerRow
+        __sliceEnd = __sliceStart + bytesPerRow  # Span of one row
 
-        __imageLine = _bArray[__sliceStart:__sliceEnd]
-        __result = all([v < _threshold for v in __imageLine])
+        # Ensure sliceEnd does not exceed the length of _bArray
+        __sliceEnd = min(__sliceEnd, len(_bArray))
+
+        # Calculate the average color intensity of the row
+        __avgIntensity = sum(
+            (_bArray[i] + _bArray[i+1] + _bArray[i+2]) / 3 
+            for i in range(__sliceStart, __sliceEnd, 4)
+        ) / (_imageWidth)
+
+        # Check if the average color intensity of the line is greater than the threshold
+        __result = __avgIntensity > _threshold
 
         return __result
 
-    ###############
-    #
-    # GetAspectRatioFromFrame
-    #   - returns Aspect ratio * 100 (i.e. 2.35 = 235)
-    #   Detects hardcoded black bars
-    ###############
+    def ColumnColorGreaterThan(self, _bArray, _colIndex, _imageWidth, _imageHeight, _threshold):
+        if _colIndex >= _imageWidth:
+            xbmc.log("Column index is out of the image width range.", level=xbmc.LOGERROR)
+            return False
 
-    def GetAspectRatioFromFrame(self):
-        __aspect_ratio = int((capture.getAspectRatio() + 0.005) * 100)
-        __threshold = 25
+        bytesPerRow = _imageWidth * 4
+        totalIntensity = 0
 
-        line1 = "Interim Aspect Ratio = " + str(__aspect_ratio)
-        xbmc.log(line1, level=xbmc.LOGINFO)
-
-        # screen capture and test for an image that is not dark in the 2.40
-        # aspect ratio area. keep on capturing images until captured image
-        # is not dark
-        while True:
-            __myimage = self.CaptureFrame()
-
-            xbmc.log(line1, level=xbmc.LOGINFO)
-
-            __middleScreenDark = self.LineColorLessThan(__myimage, 7, 2, __threshold)
-            if __middleScreenDark == False:
-                # xbmc.sleep(1000)
-                break
+        for row in range(_imageHeight):
+            index = (row * bytesPerRow) + (_colIndex * 4)
+            if index + 3 < len(_bArray):  # Ensuring we're within bounds for BGRA
+                # Accumulate the average color intensity of the column
+                totalIntensity += (_bArray[index] + _bArray[index+1] + _bArray[index+2]) / 3
             else:
-                pass
-                # xbmc.sleep(1000)
+                xbmc.log("Attempted to access an index out of range in ColumnColorGreaterThan.", level=xbmc.LOGERROR)
+                return False
 
-        # Capture another frame. after we have waited for transitions
-        # __myimage = self.CaptureFrame()
-        __ar185 = self.LineColorLessThan(__myimage, 0, 1, __threshold)
-        __ar200 = self.LineColorLessThan(__myimage, 1, 3, __threshold)
-        __ar235 = self.LineColorLessThan(__myimage, 1, 5, __threshold)
+        # Calculate the average color intensity of the column
+        __avgIntensity = totalIntensity / _imageHeight
 
-        if __ar235 == True:
-            __aspect_ratio = 235
+        # Check if the average color intensity of the column is greater than the threshold
+        __result = __avgIntensity > _threshold
 
-        elif __ar200 == True:
-            __aspect_ratio = 200
+        return __result
 
-        elif __ar185 == True:
-            __aspect_ratio = 185
+    def GetAspectRatioFromFrame(self, retry_delay=5, max_attempts=36):
+        attempts = 0
+        brightness_threshold = 10
 
+        # capture_width, capture_height = 80, 45
+        video_w_str = xbmc.getInfoLabel('Player.Process(videowidth)')
+        video_h_str = xbmc.getInfoLabel('Player.Process(videoheight)')
+
+        video_w = int(video_w_str.replace(",", ""))
+        video_h = int(video_h_str.replace(",", ""))
+        xbmc.log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
+        video_ar = video_w / video_h
+        image_height = 360
+        image_width = int(image_height*video_ar)
+
+        while attempts < max_attempts:
+            # Capture a frame (wait time optional)
+            __myimage = self.CaptureFrame(image_width,  image_height)
+
+            # Calculate average brightness of the frame
+            avg_brightness = self.calculateAverageBrightness(__myimage, image_width, image_height)
+            xbmc.log(f"Average Brightness: {avg_brightness}", xbmc.LOGINFO)
+
+            # Check if the frame is too dark
+            if avg_brightness < brightness_threshold:  # Arbitrary threshold for "too dark"
+                xbmc.log("Frame is too dark. Waiting to retry...", xbmc.LOGINFO)
+                attempts += 1
+                time.sleep(retry_delay)  # Wait for a few seconds before retrying
+                continue
+            break
+
+        # Initialize variables for the positions of the first and last non-black pixels
+        top, bottom, left, right = 0, image_height, 0, image_width
+
+        # Above this value is "non-black"
+        __threshold = 1
+
+        # Scan for the first and last non-black row
+        for i in range(image_height):
+            if top == 0 and self.LineColorGreaterThan(__myimage, i, image_width, image_height, __threshold):
+                top = i
+                break
+
+        # If top is found and is greater than 0, start scanning from the bottom to find the bottom boundary
+        if top > 0:
+            for i in range(image_height - 1, top, -1):  # Start from the bottom and move upwards
+                if self.LineColorGreaterThan(__myimage, i, image_width, image_height, __threshold):
+                    bottom = i
+                    break
+            
+        # Scan for the first non-black column (left boundary)
+        for j in range(image_width):
+            if self.ColumnColorGreaterThan(__myimage, j, image_width, image_height, __threshold):
+                left = j
+                break  # Stop scanning once the first non-black column is found
+
+        # If left boundary is found, continue to find the right boundary
+        if left > 0:
+            for j in range(image_width - 1, left, -1):  # Start scanning from the right end towards the left
+                if self.ColumnColorGreaterThan(__myimage, j, image_width, image_height, __threshold):
+                    right = j
+                    break  # Stop scanning once the first non-black column from the right is found
+
+        # Log an error if either left or right boundary couldn't be determined (indicating potential issues)
+        if left is None or right is None:
+            xbmc.log("Left or right content boundaries could not be determined.", xbmc.LOGERROR)
+
+        xbmc.log(f"Top/bottom/left/right: {top},{bottom},{left},{right}", xbmc.LOGINFO)
+
+        # Calculate the height and width of the video content
+        content_height = bottom - top + 1 if top is not None and bottom is not None else 0
+        content_width = right - left + 1 if left is not None and right is not None else 0
+
+        # Calculate the aspect ratio of the video content
+        if content_height > 0 and content_width > 0:
+            __aspect_ratio = content_width / content_height
+        else:
+            __aspect_ratio = 0  # Default to 0 if content boundaries were not found
+            xbmc.log("No content detected or content boundaries could not be determined.", level=xbmc.LOGERROR)  # Log an error if content bounds not found
+
+        # Log the calculated aspect ratio
+        xbmc.log(f"Calculated Aspect Ratio: {__aspect_ratio:.3f}:1", level=xbmc.LOGINFO)
+                
         return __aspect_ratio
 
     def abolishBlackBars(self):
         xbmcgui.Window(10000).setProperty("blackbarsnever_status", "on")
-        # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
 
-        original_aspect_ratio = None
-        android_workaround = (
-            xbmcaddon.Addon().getSetting("android_workaround") == "true"
-        )
+        aspect_ratio = self.GetAspectRatioFromFrame()
+        self.doStiaff(aspect_ratio)
 
-        imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
-        if player.getVideoInfoTag().getMediaType() == "episode":
-            # media is a TV show
-            title = player.getVideoInfoTag().getTVShowTitle()
-        else:
-            # media is probably a film
-            title = player.getVideoInfoTag().getTitle()
-            if not title:
-                title = player.getVideoInfoTag().getOriginalTitle()
-            if not title:
-                title = (
-                    os.path.basename(player.getVideoInfoTag().getFilenameAndPath())
-                    .split("/")[-1]
-                    .split(".", 1)[0]
-                )
-
-        original_aspect_ratio = getOriginalAspectRatio(title, imdb_number=imdb_number)
-
-        if isinstance(original_aspect_ratio, list):
-            # media has multiple aspect ratios, show unaltered and let user do manual intervention
-            notify("Multiple aspect ratios detected")
-        else:
-            if android_workaround and original_aspect_ratio:
-                aspect_ratio = int(original_aspect_ratio)
-
-                self.doStiaff(aspect_ratio)
-            else:
-                aspect_ratio = self.GetAspectRatioFromFrame()
-                self.doStiaff(aspect_ratio)
 
     def doStiaff(self, ratio):
-        aspect_ratio = ratio
-        aspect_ratio2 = int((capture.getAspectRatio() + 0.005) * 100)
+        content_aspect_ratio = ratio
+        monitor_width, monitor_height = self.getMonitorSize()
+        video_player_dimensions = self.getVideoPlayerDimensions()
 
-        window_id = xbmcgui.getCurrentWindowId()
-        line1 = (
-            "Calculated Aspect Ratio = "
-            + str(aspect_ratio)
-            + " "
-            + "Player Aspect Ratio = "
-            + str(aspect_ratio2)
-        )
+        if video_player_dimensions is None:
+            return
+        
+        video_player_width, video_player_height = video_player_dimensions
 
-        xbmc.log(line1, level=xbmc.LOGINFO)
+        xbmc.log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
 
-        if aspect_ratio > 178:
-            zoom_amount = aspect_ratio / 178
+        # Calculate the effective height of the video content (excluding hardcoded black bars)
+        effective_video_height = float(video_player_width) / content_aspect_ratio
+        xbmc.log("Effective Video height: {}".format(effective_video_height), level=xbmc.LOGINFO)
+
+         # Calculate the required zoom level to match the video content height to the monitor height
+        zoom_amount = float(monitor_height) / float(effective_video_height)
+        zoom_compensator = 1.075
+        zoom_amount = round(zoom_amount * zoom_compensator, 3)
+        xbmc.log("Zoom amount: {:.3f}".format(zoom_amount), level=xbmc.LOGINFO)
+
+        # Notify the user of the action taken
+        if zoom_amount > 1.0:
+            # Execute the zoom via JSON-RPC
+            xbmc.executeJSONRPC(
+                '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
+            )
+            notify("Adjusted zoom to {:.3f}".format(zoom_amount))
         else:
-            zoom_amount = 1.0
+            notify("No zoom adjustment needed.")
 
-        # zoom in a sort of animated way, isn't working for now
-        iterations = (zoom_amount - 1) / 0.01
-        # for x in range(iterations):
-        if (aspect_ratio > 178) and (aspect_ratio2 == 178):
-            # this is 16:9 and has hard coded black bars
-            xbmc.executeJSONRPC(
-                '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": '
-                + str(zoom_amount)
-                + ' }}, "id": 1}'
-            )
-            notify("Black Bars were detected. Zoomed {:0.2f}".format(zoom_amount))
-        elif aspect_ratio > 178:
-            # this is an aspect ratio wider than 16:9, no black bars, we assume a 16:9 (1.77:1) display
-            xbmc.executeJSONRPC(
-                '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": '
-                + str(zoom_amount)
-                + ' }}, "id": 1}'
-            )
-            if zoom_amount <= 1.02:
-                notify(
-                    "Wide screen was detected. Slightly zoomed {:0.2f}".format(
-                        zoom_amount
-                    )
-                )
-            elif zoom_amount > 1.02:
-                notify("Wide screen was detected. Zoomed {: 0.2f}".format(zoom_amount))
 
     def showOriginal(self):
         xbmcgui.Window(10000).setProperty("blackbarsnever_status", "off")
-        # notify(xbmcgui.Window(10000).getProperty('blackbarsnever_status'))
-
         xbmc.executeJSONRPC(
-            '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0'
-            + ' }}, "id": 1}'
+            '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0' + ' }}, "id": 1}'
         )
         notify("Showing original aspect ratio")
-
 
 p = Player()
 
 while not monitor.abortRequested():
-    # Sleep/wait for abort for 10 seconds
     if monitor.waitForAbort(10):
-        # Abort was requested while waiting. We should exit
         break
