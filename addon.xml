@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.black.bars.never" name="BlackBarsNever" version="1.0.11-nircniv" provider-name="Clement Osumo">
+<addon id="script.black.bars.never" name="BlackBarsNever" version="1.0.12" provider-name="Clement Osumo">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0"/>
 	</requires>
