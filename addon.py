@@ -222,7 +222,11 @@ class Player(xbmc.Player):
         # If content aspect ratio is wider than monitor aspect ratio
         if (content_ar > monitor_ar):
             # Remove vertical black bars
-            pass
+            effective_video_width = float(video_player_height) / content_ar
+            xbmc.log(f"Effective Video Width: {effective_video_width}", level=xbmc.LOGINFO)
+
+            # Calculate the required zoom level to match the video content height to the monitor height
+            zoom_amount = float(monitor_width) / float(effective_video_width)
         else:
             # Remove horizontal black bars
             # Calculate the effective height of the video content (excluding hardcoded black bars)
