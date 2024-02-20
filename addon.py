@@ -60,6 +60,7 @@ class Player(xbmc.Player):
             monitor_ar = monitor_width / monitor_height
 
             video_player_width, video_player_height = monitor_width, monitor_height
+            video_player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
 
             if (monitor_ar > video_player_ar):
                 video_player_width = int(float(video_player_height) * video_player_ar)
