@@ -27,8 +27,8 @@ msgid "Automatically remove black bars"
 msgstr "Automatically remove black bars"
 
 msgctxt "#32003"
-msgid "Show nofitications"
-msgstr "Show nofitications"
+msgid "Show notifications"
+msgstr "Show notifications"
 
 msgctxt "#32004"
 msgid "Toggle status"
