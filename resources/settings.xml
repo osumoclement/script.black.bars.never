@@ -8,14 +8,19 @@
                     <default>true</default>
                     <control type="toggle"/>
                 </setting>
-                <setting id="toggle_test" type="action" label="32003" help="">
+                <setting help="" id="show_notification" label="32003" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="toggle_test" type="action" label="32004" help="">
 	                <level>0</level>
 	                <data>RunScript(script.black.bars.never, toggle)</data>
 	                <control type="button" format="action">
 		            <close>true</close>
 	                </control>
                 </setting>
-                <setting help="" id="android_workaround" label="32004" type="boolean">
+                <setting help="" id="android_workaround" label="32005" type="boolean">
                     <level>0</level>
                     <default>false</default>
                     <control type="toggle"/>

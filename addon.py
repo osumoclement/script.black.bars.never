@@ -1,4 +1,3 @@
-import os
 import sys
 import time
 
@@ -231,15 +230,15 @@ class Player(xbmc.Player):
 
         log("Zoom amount: {:.2f}".format(zoom_amount), level=xbmc.LOGINFO)
         
-        
         # Execute the zoom via JSON-RPC
         xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
         
-        if (zoom_amount > 1.0):
-            # Notify the user of the action taken   
-            notify("Adjusted zoom to {:.2f}".format(zoom_amount))
+        if (xbmcaddon.Addon().getSetting("notification_status") == "true"):
+            if (zoom_amount > 1.0):
+                # Notify the user of the action taken   
+                notify("Adjusted zoom to {:.2f}".format(zoom_amount))
 
     def showOriginal(self):
         xbmcgui.Window(10000).setProperty("blackbarsnever_status", "off")

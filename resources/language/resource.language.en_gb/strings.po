@@ -27,9 +27,13 @@ msgid "Automatically remove black bars"
 msgstr "Automatically remove black bars"
 
 msgctxt "#32003"
+msgid "Show nofitications"
+msgstr "Show nofitications"
+
+msgctxt "#32004"
 msgid "Toggle status"
 msgstr "Toggle status"
 
-msgctxt "#32004"
+msgctxt "#32005"
 msgid "Workaround for Android & Embedded (requires internet)"
 msgstr "Workaround for Android & Embedded (requires internet)"
