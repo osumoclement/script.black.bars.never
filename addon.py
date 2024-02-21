@@ -235,7 +235,7 @@ class Player(xbmc.Player):
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
         
-        if (xbmcaddon.Addon().getSetting("notification_status") == "true"):
+        if (xbmcaddon.Addon().getSetting("show_notification") == "true"):
             if (zoom_amount > 1.0):
                 # Notify the user of the action taken   
                 notify("Adjusted zoom to {:.2f}".format(zoom_amount))
