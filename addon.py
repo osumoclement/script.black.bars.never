@@ -13,6 +13,9 @@ player = xbmc.Player()
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
 
+def log(msg, level=xbmc.LOGINFO):
+    xbmc.log("Black Bars Never: " + msg, level=level)
+
 class Player(xbmc.Player):
     def __init__(self):
         xbmc.Player.__init__(self)
@@ -49,7 +52,7 @@ class Player(xbmc.Player):
         height = int(xbmc.getInfoLabel('System.ScreenHeight'))
 
         if width is None or height is None:
-            xbmc.log("NeverBlackBars: Unable to get Monitor Size.", xbmc.LOGERROR)
+            log("NeverBlackBars: Unable to get Monitor Size.", xbmc.LOGERROR)
             return None
         return width, height
     
@@ -67,14 +70,14 @@ class Player(xbmc.Player):
             else:
                 video_player_height = int(float(video_player_width) / video_player_ar)
 
-            xbmc.log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
+            log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
             return video_player_width, video_player_height
         else:
             # If no video is playing, log this status
-            xbmc.log(f"No video is currently playing.", level=xbmc.LOGINFO)
+            log(f"No video is currently playing.", level=xbmc.LOGINFO)
         
         # If the function fails to retrieve dimensions, log an error.
-        xbmc.log("Error retrieving video player dimensions. Terminating.", level=xbmc.LOGERROR)
+        log("Error retrieving video player dimensions. Terminating.", level=xbmc.LOGERROR)
         return None
 
     def LineColorGreaterThan(self, _bArray, _lineIndex, _imageWidth, _imageHeight, _threshold):
@@ -98,7 +101,7 @@ class Player(xbmc.Player):
 
     def ColumnColorGreaterThan(self, _bArray, _colIndex, _imageWidth, _imageHeight, _threshold):
         if _colIndex >= _imageWidth:
-            xbmc.log("Column index is out of the image width range.", level=xbmc.LOGERROR)
+            log("Column index is out of the image width range.", level=xbmc.LOGERROR)
             return False
 
         bytesPerRow = _imageWidth * 4
@@ -110,7 +113,7 @@ class Player(xbmc.Player):
                 # Accumulate the average color intensity of the column
                 totalIntensity += (_bArray[index] + _bArray[index+1] + _bArray[index+2]) / 3
             else:
-                xbmc.log("Attempted to access an index out of range in ColumnColorGreaterThan.", level=xbmc.LOGERROR)
+                log("Attempted to access an index out of range in ColumnColorGreaterThan.", level=xbmc.LOGERROR)
                 return False
 
         # Calculate the average color intensity of the column
@@ -129,11 +132,11 @@ class Player(xbmc.Player):
         video_h_str = xbmc.getInfoLabel('Player.Process(videoheight)')
         video_w = int(video_w_str.replace(",", ""))
         video_h = int(video_h_str.replace(",", ""))
-        xbmc.log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
+        log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
 
         player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
         player_width, player_height = self.getVideoPlayerDimensions() 
-        xbmc.log(f"Video Player Aspect Ratio: {player_ar}", xbmc.LOGINFO)
+        log(f"Video Player Aspect Ratio: {player_ar}", xbmc.LOGINFO)
 
         image_height = 480
         image_width = int(image_height*player_ar)
@@ -144,11 +147,11 @@ class Player(xbmc.Player):
 
             # Calculate average brightness of the frame
             avg_brightness = self.calculateAverageBrightness(__myimage, image_width, image_height)
-            xbmc.log(f"Average Brightness: {avg_brightness}", xbmc.LOGINFO)
+            log(f"Average Brightness: {avg_brightness}", xbmc.LOGINFO)
 
             # Check if the frame is too dark
             if avg_brightness < brightness_threshold:  # Arbitrary threshold for "too dark"
-                xbmc.log("Frame is too dark. Waiting to retry...", xbmc.LOGINFO)
+                log("Frame is too dark. Waiting to retry...", xbmc.LOGINFO)
                 attempts += 1
                 time.sleep(retry_delay)  # Wait for a few seconds before retrying
                 continue
@@ -188,9 +191,9 @@ class Player(xbmc.Player):
 
         # Log an error if either left or right boundary couldn't be determined (indicating potential issues)
         if left is None or right is None:
-            xbmc.log("Left or right content boundaries could not be determined.", xbmc.LOGERROR)
+            log("Left or right content boundaries could not be determined.", xbmc.LOGERROR)
 
-        xbmc.log(f"Top/bottom/left/right: {top},{bottom},{left},{right}", xbmc.LOGINFO)
+        log(f"Top/bottom/left/right: {top},{bottom},{left},{right}", xbmc.LOGINFO)
 
         # Calculate the height and width of the video content
         content_height = bottom - top + 1 if top is not None and bottom is not None else 0
@@ -212,12 +215,12 @@ class Player(xbmc.Player):
         content_ar = content_width / content_height
 
         # Log the content size
-        xbmc.log(f"Content Dimension: {content_width}x{content_height}", level=xbmc.LOGINFO)
-        xbmc.log(f"Content Aspect Ratio: {content_ar:.3f}:1", level=xbmc.LOGINFO)
+        log(f"Content Dimension: {content_width}x{content_height}", level=xbmc.LOGINFO)
+        log(f"Content Aspect Ratio: {content_ar:.3f}:1", level=xbmc.LOGINFO)
 
         monitor_width, monitor_height = self.getMonitorSize()
         monitor_ar = monitor_width / monitor_height
-        xbmc.log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
+        log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
 
         if (content_ar < monitor_ar):
             # Fill to height
@@ -226,7 +229,7 @@ class Player(xbmc.Player):
             # Fill to width
             zoom_amount = round(float(monitor_width) / content_width, 2)
 
-        xbmc.log("Zoom amount: {:.2f}".format(zoom_amount), level=xbmc.LOGINFO)
+        log("Zoom amount: {:.2f}".format(zoom_amount), level=xbmc.LOGINFO)
         
         
         # Execute the zoom via JSON-RPC
