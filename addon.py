@@ -51,7 +51,7 @@ class Player(xbmc.Player):
         height = int(xbmc.getInfoLabel('System.ScreenHeight'))
 
         if width is None or height is None:
-            log("NeverBlackBars: Unable to get Monitor Size.", xbmc.LOGERROR)
+            log("Unable to get Monitor Size.", xbmc.LOGERROR)
             return None
         return width, height
     
@@ -161,32 +161,38 @@ class Player(xbmc.Player):
 
         # Above this value is "non-black"
         __threshold = 4
+        # Offset start pixel to fix green line rendering bug
+        offset = 2
 
         # Scan for the first and last non-black row
-        for i in range(image_height):
+        for i in range(offset, image_height-1):
             if top == 0 and self.LineColorGreaterThan(__myimage, i, image_width, image_height, __threshold):
                 top = i
                 break
 
         # If top is found and is greater than 0, start scanning from the bottom to find the bottom boundary
-        if top > 0:
-            for i in range(image_height - 1, top, -1):  # Start from the bottom and move upwards
+        if top > offset:
+            for i in range(image_height - offset - 1, top, -1):  # Start from the bottom and move upwards
                 if self.LineColorGreaterThan(__myimage, i, image_width, image_height, __threshold):
                     bottom = i
                     break
+        else:
+            top -= offset
             
         # Scan for the first non-black column (left boundary)
-        for j in range(image_width):
+        for j in range(offset, image_width - 1):
             if self.ColumnColorGreaterThan(__myimage, j, image_width, image_height, __threshold):
                 left = j
                 break  # Stop scanning once the first non-black column is found
 
         # If left boundary is found, continue to find the right boundary
-        if left > 0:
-            for j in range(image_width - 1, left, -1):  # Start scanning from the right end towards the left
+        if left > offset:
+            for j in range(image_width - offset - 1, left, -1):  # Start scanning from the right end towards the left
                 if self.ColumnColorGreaterThan(__myimage, j, image_width, image_height, __threshold):
                     right = j
                     break  # Stop scanning once the first non-black column from the right is found
+        else:
+            left -= offset
 
         # Log an error if either left or right boundary couldn't be determined (indicating potential issues)
         if left is None or right is None:
@@ -214,7 +220,7 @@ class Player(xbmc.Player):
         content_ar = content_width / content_height
 
         # Log the content size
-        log(f"Content Dimension: {content_width}x{content_height}", level=xbmc.LOGINFO)
+        log(f"Content Dimension: {content_width:.2f}x{content_height:.2f}", level=xbmc.LOGINFO)
         log(f"Content Aspect Ratio: {content_ar:.3f}:1", level=xbmc.LOGINFO)
 
         monitor_width, monitor_height = self.getMonitorSize()
