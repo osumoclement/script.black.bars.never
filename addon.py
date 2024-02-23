@@ -5,33 +5,18 @@ import xbmcaddon
 import xbmcgui
 from imdb_scraper import ImdbScraper
 
-monitor = xbmc.Monitor()
-capture = xbmc.RenderCapture()
-player = xbmc.Player()
-
-logging_status = True
-
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
 
 class Player(xbmc.Player):
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(Player, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
-
     def __init__(self):
-        if not hasattr(self, '_initialized'):  # Prevent re-initialization
-            xbmc.Player.__init__(self)
-            self._initialized = True
+        super().__init__()
+        self._initialized = True
+        self.monitor = xbmc.Monitor()
+        self.capture = xbmc.RenderCapture()
 
-            if "toggle" in sys.argv:
-                if xbmcgui.Window(10000).getProperty("blackbarsnever_status") == "on":
-                    self.showOriginal()
-                else:
-                    self.abolishBlackBars()
+        if "toggle" in sys.argv:
+            self.toggleZoomAdjustment()
 
     def onAVStarted(self):
         self.multi_ar = False
@@ -42,16 +27,14 @@ class Player(xbmc.Player):
 
         if xbmcaddon.Addon().getSetting("automatically_execute") == "true":
             self.abolishBlackBars()
-        else:
-            self.showOriginal()
 
     def log(self, msg, level=xbmc.LOGINFO):
         if self.logging_status:
             xbmc.log("Black Bars Never: " + msg, level=level)
 
     def CaptureFrame(self, capture_width, capture_height):
-        capture.capture(capture_width, capture_height)
-        capturedImage = capture.getImage(2000)
+        self.capture.capture(capture_width, capture_height)
+        capturedImage = self.capture.getImage(2000)
         return capturedImage
 
     def calculateAverageBrightness(self, img_data, image_width, image_height):
@@ -241,7 +224,7 @@ class Player(xbmc.Player):
     
     def _getContentDimensionsFromImage(self, player_width, player_height, player_ar):
         attempts = 1
-        retry_delay = 5000
+        retry_delay = 5
         max_attempts = 36
         image_height = 480
         image_width = int(image_height*player_ar)
@@ -261,8 +244,9 @@ class Player(xbmc.Player):
             else:
                 # If the frame is too dark, log the attempt and wait before retrying.
                 self.log(f"Frame is too dark. Attempt {attempts} of {max_attempts}. Waiting to retry...", xbmc.LOGINFO)
+                if self.monitor.waitForAbort(retry_delay):
+                    return None, None
                 attempts += 1
-                xbmc.sleep(retry_delay)  # Wait for the specified delay before retrying.
 
         if attempts == max_attempts:
             self.log("Unable to find bright frame after maximum attempts", xbmc.LOGERROR)
@@ -352,11 +336,12 @@ class Player(xbmc.Player):
                 # Notify the user of the action taken   
                 notify("Adjusted zoom to {:.2f}".format(zoom_amount))
 
-    def CalculateZoomPeriodically(self, delay=5000):
-        while not monitor.abortRequested() and self.isPlayingVideo():
-                self.CalculateZoom()
-                self.logging_status = False
-                xbmc.sleep(delay)
+    def CalculateZoomPeriodically(self, delay=5):
+        while not self.monitor.abortRequested() and self.isPlayingVideo():
+            self.CalculateZoom()
+            self.logging_status = False
+            if self.monitor.waitForAbort(delay):
+                break
 
     def showOriginal(self):
         if xbmcgui.Window(10000).getProperty("blackbarsnever_processing") != "true":
@@ -369,6 +354,13 @@ class Player(xbmc.Player):
             notify("Showing original aspect ratio")
 
             xbmcgui.Window(10000).clearProperty("blackbarsnever_processing")
+
+    def toggleZoomAdjustment(self):
+        status = xbmcgui.Window(10000).getProperty("blackbarsnever_status")
+        if status == "on":
+            self.showOriginal()
+        else:
+            self.abolishBlackBars()
     
     def abolishBlackBars(self):
         # Check if the processing flag is set to avoid re-entry
@@ -382,20 +374,19 @@ class Player(xbmc.Player):
         if xbmcaddon.Addon().getSetting("multi_aspect_ratios_support") == "true" or xbmcaddon.Addon().getSetting("android_workaround") == "true":
             self.getImdbMeta()
 
-        # Initialize a flag to determine whether to enter the recalculating loop
         self.enter_recalc_loop = self.multi_ar and xbmcaddon.Addon().getSetting("android_workaround") == "false"
 
         if self.enter_recalc_loop:
             # Loop for periodic recalculations if conditions are met
-            self.CalculateZoomPeriodically(5000)
+            self.CalculateZoomPeriodically()
         else:
             # Perform a single zoom calculation otherwise
             self.CalculateZoom()
 
         xbmcgui.Window(10000).clearProperty("blackbarsnever_processing")
 
-p = Player()
-
-while not monitor.abortRequested():
-    if monitor.waitForAbort(10):
-        break
+if __name__ == "__main__":
+    player = Player()
+    while not player.monitor.abortRequested():
+        if player.monitor.waitForAbort(10):
+            break
