@@ -37,3 +37,7 @@ msgstr "Toggle status"
 msgctxt "#32005"
 msgid "Workaround for Android & Embedded (requires internet)"
 msgstr "Workaround for Android & Embedded (requires internet)"
+
+msgctxt "#32006"
+msgid "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"
+msgstr "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"

@@ -8,9 +8,19 @@
                     <default>true</default>
                     <control type="toggle"/>
                 </setting>
+                <setting help="" id="multi_aspect_ratios_support" label="32006" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
                 <setting help="" id="show_notification" label="32003" type="boolean">
                     <level>0</level>
                     <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting help="" id="android_workaround" label="32005" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
                     <control type="toggle"/>
                 </setting>
                 <setting id="toggle_test" type="action" label="32004" help="">
@@ -19,11 +29,6 @@
 	                <control type="button" format="action">
 		            <close>true</close>
 	                </control>
-                </setting>
-                <setting help="" id="android_workaround" label="32005" type="boolean">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle"/>
                 </setting>
             </group>
         </category>

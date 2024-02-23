@@ -1,12 +1,13 @@
 import sys
-import time
-
+import json
 import xbmc
 import xbmcaddon
 import xbmcgui
+from imdb_scraper import ImdbScraper
 
 monitor = xbmc.Monitor()
 capture = xbmc.RenderCapture()
+player = xbmc.Player()
 
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
@@ -16,6 +17,10 @@ def log(msg, level=xbmc.LOGINFO):
 
 class Player(xbmc.Player):
     _instance = None
+    multi_ar = False
+    imdb_data = None
+    imdb_ar = None
+    enter_recalc_loop = False
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -66,7 +71,7 @@ class Player(xbmc.Player):
 
         if width is None or height is None:
             log("Unable to get Monitor Size.", xbmc.LOGERROR)
-            return None
+            return None, None
         return width, height
     
     def getVideoPlayerDimensions(self):
@@ -91,7 +96,7 @@ class Player(xbmc.Player):
         
         # If the function fails to retrieve dimensions, log an error.
         log("Error retrieving video player dimensions. Terminating.", level=xbmc.LOGERROR)
-        return None
+        return None, None
     
     def getVideoDimensions(self):
         video_w_str = xbmc.getInfoLabel('Player.Process(videowidth)')
@@ -148,7 +153,7 @@ class Player(xbmc.Player):
 
         return __result
     
-    def __getContentImageDimensions(self, image, image_width, image_height):
+    def _getContentImageDimensions(self, image, image_width, image_height):
         threshold = 4     # Above this value is "non-black"
         offset = 2        # Offset start pixel to fix green line rendering bug
         top, bottom, left, right = offset, image_height, offset, image_width
@@ -191,16 +196,48 @@ class Player(xbmc.Player):
 
         return content_image_width, content_image_height
     
-    def getContentDimensions(self, retry_delay=5, max_attempts=12):
+    def getImdbMeta(self):
+        try:
+            metadata = self.getVideoMetadata()
+            log(json.dumps(metadata, indent=4), xbmc.LOGINFO)
+            self.imdb_data = ImdbScraper(metadata['title'], metadata['content_type'], metadata['imdb_number'])
+            self.imdb_ar = self.imdb_data.parse_aspect_ratios()
+            self.multi_ar = len(self.imdb_ar) > 1
+
+            if self.multi_ar:
+                log(f"Multiple aspect ratios detected from Imdb: {self.imdb_ar}", xbmc.LOGINFO)
+                if xbmcaddon.Addon().getSetting("show_notification") == "true":
+                    notify("Multiple aspect ratios detected")
+        except Exception as e:
+            self.imdb_data = None
+            self.imdb_ar = None
+            log(f"Error occurred: {e}", xbmc.LOGERROR)
+            return
+
+    def _getContentDimensionsFromData(self, player_width, player_height, player_ar):
+        content_ar = self.imdb_ar
+
+        if self.multi_ar:
+            content_width = player_width
+            content_height = player_height
+        else:
+            content_ar = content_ar[0]
+            log(f"Content aspect ratio from Imdb: {content_ar}", xbmc.LOGINFO)
+
+            if content_ar > player_ar:
+                # Filled width, content width = player width
+                content_width = player_width
+                content_height = content_width / content_ar
+            else:
+                # Filled height, content height = player height
+                content_height = player_height
+                content_width = content_height * content_ar
+        return content_width, content_height
+    
+    def _getContentDimensionsFromImage(self, player_width, player_height, player_ar):
         attempts = 1
-
-        video_w, video_h = self.getVideoDimensions()
-        log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
-
-        player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
-        player_width, player_height = self.getVideoPlayerDimensions() 
-        log(f"Video Player Aspect Ratio: {player_ar}", xbmc.LOGINFO)
-
+        retry_delay = 5000
+        max_attempts = 36
         image_height = 480
         image_width = int(image_height*player_ar)
         log(f"Image Dimensions: {image_width}x{image_height}", xbmc.LOGINFO)
@@ -210,28 +247,80 @@ class Player(xbmc.Player):
 
             if self.checkForBrightFrame(image_data, image_width, image_height):
                 # If a bright frame is found, process it.
-                content_image_width, content_image_height = self.__getContentImageDimensions(image_data, image_width, image_height)
-                break  # Exit the loop if a bright frame is found.
+                try:
+                    content_image_width, content_image_height = self._getContentImageDimensions(image_data, image_width, image_height)
+                except Exception as e:
+                    log(f"Error occurred: {e}", xbmc.LOGERROR)
+                    return None, None
+                break
             else:
                 # If the frame is too dark, log the attempt and wait before retrying.
                 log(f"Frame is too dark. Attempt {attempts} of {max_attempts}. Waiting to retry...", xbmc.LOGINFO)
                 attempts += 1
-                time.sleep(retry_delay)  # Wait for the specified delay before retrying.
+                xbmc.sleep(retry_delay)  # Wait for the specified delay before retrying.
 
         if attempts == max_attempts:
             log("Unable to find bright frame after maximum attempts", xbmc.LOGERROR)
+            notify("Unable to find bright frame")
+            return None, None
 
         height_scale = content_image_height / image_height
         width_scale = content_image_width / image_width
-
         content_width = float(player_width) * width_scale
         content_height = float(player_height) * height_scale
         return content_width, content_height
 
+    def getContentDimensions(self):
+        video_w, video_h = self.getVideoDimensions()
+        log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
+
+        player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
+        player_width, player_height = self.getVideoPlayerDimensions() 
+        log(f"Video Player Aspect Ratio: {player_ar}", xbmc.LOGINFO)
+
+        use_workaround = xbmcaddon.Addon().getSetting("android_workaround") == "true"
+        content_width, content_height = None, None
+
+        if use_workaround:
+            content_width, content_height = self._getContentDimensionsFromData(player_width, player_height, player_ar)
+
+        if content_width is None or content_height is None:
+            content_width, content_height = self._getContentDimensionsFromImage(player_width, player_height, player_ar)
+
+        return content_width, content_height
+    
+    def getVideoMetadata(self):
+        # Check if a video is currently playing
+        if xbmc.Player().isPlayingVideo():
+            # Retrieve specific metadata properties
+            title = xbmc.getInfoLabel('VideoPlayer.Title') or None
+            content_type = 'tt' if xbmc.getInfoLabel('VideoPlayer.OriginalTitle') else 'ep' if xbmc.getInfoLabel('VideoPlayer.TVshowtitle') else None
+            imdb_number = xbmc.getInfoLabel('VideoPlayer.IMDBNumber') or None
+            season = xbmc.getInfoLabel('VideoPlayer.Season') or None
+            episode = xbmc.getInfoLabel('VideoPlayer.Episode') or None
+
+            # Compile the metadata into a dictionary
+            metadata = {
+                'title': title,
+                'content_type': content_type,
+                'imdb_number': imdb_number,
+                'season': season,
+                'episode': episode
+            }
+            
+            return metadata
+        else:
+            log("No video is currently playing", xbmc.LOGERROR)
+            return None
+
     def CalculateZoom(self):
         content_width, content_height = self.getContentDimensions()
-        content_ar = content_width / content_height
 
+        if content_width is None or content_height is None:
+            log("Unable to calculate zoom", xbmc.LOGERROR)
+            return
+        
+        content_ar = content_width / content_height
         log(f"Content Dimension: {content_width:.2f}x{content_height:.2f}", level=xbmc.LOGINFO)
         log(f"Content Aspect Ratio: {content_ar:.3f}:1", level=xbmc.LOGINFO)
 
@@ -253,8 +342,8 @@ class Player(xbmc.Player):
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
         
-        if xbmcaddon.Addon().getSetting("show_notification") == "true":
-            if (zoom_amount > 1.0):
+        if xbmcaddon.Addon().getSetting("show_notification") == "true" and not self.enter_recalc_loop:
+            if zoom_amount > 1.0:
                 # Notify the user of the action taken   
                 notify("Adjusted zoom to {:.2f}".format(zoom_amount))
 
@@ -271,12 +360,30 @@ class Player(xbmc.Player):
             xbmcgui.Window(10000).clearProperty("blackbarsnever_processing")
     
     def abolishBlackBars(self):
-        if xbmcgui.Window(10000).getProperty("blackbarsnever_processing") != "true":
-            xbmcgui.Window(10000).setProperty("blackbarsnever_processing", "true")
-            xbmcgui.Window(10000).setProperty("blackbarsnever_status", "on")
+        # Check if the processing flag is set to avoid re-entry
+        if xbmcgui.Window(10000).getProperty("blackbarsnever_processing") == "true":
+            return
+        
+        xbmcgui.Window(10000).setProperty("blackbarsnever_processing", "true")
+        xbmcgui.Window(10000).setProperty("blackbarsnever_status", "on")
+        
+        # Fetch IMDb metadata if multi-aspect ratios support is enabled or Android workaround is active
+        if xbmcaddon.Addon().getSetting("multi_aspect_ratios_support") == "true" or xbmcaddon.Addon().getSetting("android_workaround") == "true":
+            self.getImdbMeta()
+
+        # Initialize a flag to determine whether to enter the recalculating loop
+        self.enter_recalc_loop = self.multi_ar and xbmcaddon.Addon().getSetting("android_workaround") == "false"
+
+        if self.enter_recalc_loop:
+            # Loop for periodic recalculations if conditions are met
+            while not monitor.abortRequested() and self.isPlayingVideo():
+                self.CalculateZoom()
+                xbmc.sleep(5000)  # Wait for 5 seconds before potentially recalculating again
+        else:
+            # Perform a single zoom calculation otherwise
             self.CalculateZoom()
 
-            xbmcgui.Window(10000).clearProperty("blackbarsnever_processing")
+        xbmcgui.Window(10000).clearProperty("blackbarsnever_processing")
 
 p = Player()
 
