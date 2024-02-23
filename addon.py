@@ -9,18 +9,13 @@ monitor = xbmc.Monitor()
 capture = xbmc.RenderCapture()
 player = xbmc.Player()
 
+logging_status = True
+
 def notify(msg):
     xbmcgui.Dialog().notification("BlackBarsNever", msg, None, 1000)
 
-def log(msg, level=xbmc.LOGINFO):
-    xbmc.log("Black Bars Never: " + msg, level=level)
-
 class Player(xbmc.Player):
     _instance = None
-    multi_ar = False
-    imdb_data = None
-    imdb_ar = None
-    enter_recalc_loop = False
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -39,10 +34,20 @@ class Player(xbmc.Player):
                     self.abolishBlackBars()
 
     def onAVStarted(self):
+        self.multi_ar = False
+        self.imdb_data = None
+        self.imdb_ar = None
+        self.enter_recalc_loop = False
+        self.logging_status = True
+
         if xbmcaddon.Addon().getSetting("automatically_execute") == "true":
             self.abolishBlackBars()
         else:
             self.showOriginal()
+
+    def log(self, msg, level=xbmc.LOGINFO):
+        if self.logging_status:
+            xbmc.log("Black Bars Never: " + msg, level=level)
 
     def CaptureFrame(self, capture_width, capture_height):
         capture.capture(capture_width, capture_height)
@@ -61,7 +66,7 @@ class Player(xbmc.Player):
     def checkForBrightFrame(self, image_data, image_width, image_height):
         brightness_threshold = 32.0
         avg_brightness = self.calculateAverageBrightness(image_data, image_width, image_height)
-        log(f"Average Brightness: {avg_brightness}", xbmc.LOGINFO)
+        self.log(f"Average Brightness: {avg_brightness}", xbmc.LOGINFO)
         return avg_brightness >= brightness_threshold
     
     def getMonitorSize(self):
@@ -70,7 +75,7 @@ class Player(xbmc.Player):
         height = int(xbmc.getInfoLabel('System.ScreenHeight'))
 
         if width is None or height is None:
-            log("Unable to get Monitor Size.", xbmc.LOGERROR)
+            self.log("Unable to get Monitor Size.", xbmc.LOGERROR)
             return None, None
         return width, height
     
@@ -88,14 +93,14 @@ class Player(xbmc.Player):
             else:
                 video_player_height = int(float(video_player_width) / video_player_ar)
 
-            log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
+            self.log(f"Video Player Dimensions: {video_player_width}x{video_player_height}", level=xbmc.LOGINFO)
             return video_player_width, video_player_height
         else:
             # If no video is playing, log this status
-            log(f"No video is currently playing.", level=xbmc.LOGINFO)
+            self.log(f"No video is currently playing.", level=xbmc.LOGINFO)
         
         # If the function fails to retrieve dimensions, log an error.
-        log("Error retrieving video player dimensions. Terminating.", level=xbmc.LOGERROR)
+        self.log("Error retrieving video player dimensions. Terminating.", level=xbmc.LOGERROR)
         return None, None
     
     def getVideoDimensions(self):
@@ -107,7 +112,7 @@ class Player(xbmc.Player):
 
     def LineColorGreaterThan(self, _bArray, _lineIndex, _imageWidth, _imageHeight, _threshold):
         if _lineIndex >= _imageHeight:
-            log("Line index is out of the image height range.", level=xbmc.LOGERROR)
+            self.log("Line index is out of the image height range.", level=xbmc.LOGERROR)
             return False
 
         bytesPerRow = _imageWidth * 4
@@ -118,7 +123,7 @@ class Player(xbmc.Player):
 
         # Ensure we do not exceed the array bounds
         if startIndex >= len(_bArray):
-            log("Start index for the line is out of the _bArray bounds.", level=xbmc.LOGERROR)
+            self.log("Start index for the line is out of the _bArray bounds.", level=xbmc.LOGERROR)
             return False
 
         # Iterate through each pixel in the line
@@ -133,7 +138,7 @@ class Player(xbmc.Player):
 
     def ColumnColorGreaterThan(self, _bArray, _colIndex, _imageWidth, _imageHeight, _threshold):
         if _colIndex >= _imageWidth:
-            log("Column index is out of the image width range.", level=xbmc.LOGERROR)
+            self.log("Column index is out of the image width range.", level=xbmc.LOGERROR)
             return False
 
         bytesPerRow = _imageWidth * 4
@@ -145,7 +150,7 @@ class Player(xbmc.Player):
                 # Accumulate the average color intensity of the column
                 totalIntensity += (_bArray[index] + _bArray[index+1] + _bArray[index+2]) / 3
             else:
-                log("Attempted to access an index out of range in ColumnColorGreaterThan.", level=xbmc.LOGERROR)
+                self.log("Attempted to access an index out of range in ColumnColorGreaterThan.", level=xbmc.LOGERROR)
                 return False
 
         __avgIntensity = totalIntensity / _imageHeight
@@ -188,7 +193,7 @@ class Player(xbmc.Player):
         else:
             left -= offset
 
-        log(f"Top/bottom/left/right: {top},{bottom},{left},{right}", xbmc.LOGINFO)
+        self.log(f"Top/bottom/left/right: {top},{bottom},{left},{right}", xbmc.LOGINFO)
 
         # Calculate the height and width of the video content
         content_image_height = bottom - top if top is not None and bottom is not None else 0
@@ -199,19 +204,19 @@ class Player(xbmc.Player):
     def getImdbMeta(self):
         try:
             metadata = self.getVideoMetadata()
-            log(json.dumps(metadata, indent=4), xbmc.LOGINFO)
+            self.log(json.dumps(metadata, indent=4), xbmc.LOGINFO)
             self.imdb_data = ImdbScraper(metadata['title'], metadata['content_type'], metadata['imdb_number'])
             self.imdb_ar = self.imdb_data.parse_aspect_ratios()
             self.multi_ar = len(self.imdb_ar) > 1
 
             if self.multi_ar:
-                log(f"Multiple aspect ratios detected from Imdb: {self.imdb_ar}", xbmc.LOGINFO)
+                self.log(f"Multiple aspect ratios detected from Imdb: {self.imdb_ar}", xbmc.LOGINFO)
                 if xbmcaddon.Addon().getSetting("show_notification") == "true":
                     notify("Multiple aspect ratios detected")
         except Exception as e:
             self.imdb_data = None
             self.imdb_ar = None
-            log(f"Error occurred: {e}", xbmc.LOGERROR)
+            self.log(f"Error occurred: {e}", xbmc.LOGERROR)
             return
 
     def _getContentDimensionsFromData(self, player_width, player_height, player_ar):
@@ -222,7 +227,7 @@ class Player(xbmc.Player):
             content_height = player_height
         else:
             content_ar = content_ar[0]
-            log(f"Content aspect ratio from Imdb: {content_ar}", xbmc.LOGINFO)
+            self.log(f"Content aspect ratio from Imdb: {content_ar}", xbmc.LOGINFO)
 
             if content_ar > player_ar:
                 # Filled width, content width = player width
@@ -240,7 +245,7 @@ class Player(xbmc.Player):
         max_attempts = 36
         image_height = 480
         image_width = int(image_height*player_ar)
-        log(f"Image Dimensions: {image_width}x{image_height}", xbmc.LOGINFO)
+        self.log(f"Image Dimensions: {image_width}x{image_height}", xbmc.LOGINFO)
 
         while attempts < max_attempts:
             image_data = self.CaptureFrame(image_width, image_height)
@@ -250,17 +255,17 @@ class Player(xbmc.Player):
                 try:
                     content_image_width, content_image_height = self._getContentImageDimensions(image_data, image_width, image_height)
                 except Exception as e:
-                    log(f"Error occurred: {e}", xbmc.LOGERROR)
+                    self.log(f"Error occurred: {e}", xbmc.LOGERROR)
                     return None, None
                 break
             else:
                 # If the frame is too dark, log the attempt and wait before retrying.
-                log(f"Frame is too dark. Attempt {attempts} of {max_attempts}. Waiting to retry...", xbmc.LOGINFO)
+                self.log(f"Frame is too dark. Attempt {attempts} of {max_attempts}. Waiting to retry...", xbmc.LOGINFO)
                 attempts += 1
                 xbmc.sleep(retry_delay)  # Wait for the specified delay before retrying.
 
         if attempts == max_attempts:
-            log("Unable to find bright frame after maximum attempts", xbmc.LOGERROR)
+            self.log("Unable to find bright frame after maximum attempts", xbmc.LOGERROR)
             notify("Unable to find bright frame")
             return None, None
 
@@ -272,11 +277,11 @@ class Player(xbmc.Player):
 
     def getContentDimensions(self):
         video_w, video_h = self.getVideoDimensions()
-        log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
+        self.log(f"Video Resolution: {video_w}x{video_h}", xbmc.LOGINFO)
 
         player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
         player_width, player_height = self.getVideoPlayerDimensions() 
-        log(f"Video Player Aspect Ratio: {player_ar}", xbmc.LOGINFO)
+        self.log(f"Video Player Aspect Ratio: {player_ar}", xbmc.LOGINFO)
 
         use_workaround = xbmcaddon.Addon().getSetting("android_workaround") == "true"
         content_width, content_height = None, None
@@ -310,23 +315,23 @@ class Player(xbmc.Player):
             
             return metadata
         else:
-            log("No video is currently playing", xbmc.LOGERROR)
+            self.log("No video is currently playing", xbmc.LOGERROR)
             return None
 
     def CalculateZoom(self):
         content_width, content_height = self.getContentDimensions()
 
         if content_width is None or content_height is None:
-            log("Unable to calculate zoom", xbmc.LOGERROR)
+            self.log("Unable to calculate zoom", xbmc.LOGERROR)
             return
         
         content_ar = content_width / content_height
-        log(f"Content Dimension: {content_width:.2f}x{content_height:.2f}", level=xbmc.LOGINFO)
-        log(f"Content Aspect Ratio: {content_ar:.3f}:1", level=xbmc.LOGINFO)
+        self.log(f"Content Dimension: {content_width:.2f}x{content_height:.2f}", level=xbmc.LOGINFO)
+        self.log(f"Content Aspect Ratio: {content_ar:.3f}:1", level=xbmc.LOGINFO)
 
         monitor_width, monitor_height = self.getMonitorSize()
         monitor_ar = monitor_width / monitor_height
-        log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
+        self.log("Monitor Size: {}x{}".format(monitor_width, monitor_height), level=xbmc.LOGINFO)
 
         if content_ar < monitor_ar:
             # Fill to height
@@ -335,7 +340,7 @@ class Player(xbmc.Player):
             # Fill to width
             zoom_amount = round(float(monitor_width) / content_width, 2)
 
-        log("Zoom amount: {:.2f}".format(zoom_amount), level=xbmc.LOGINFO)
+        self.log("Zoom amount: {:.2f}".format(zoom_amount), level=xbmc.LOGINFO)
         
         # Execute the zoom via JSON-RPC
         xbmc.executeJSONRPC(
@@ -346,6 +351,12 @@ class Player(xbmc.Player):
             if zoom_amount > 1.0:
                 # Notify the user of the action taken   
                 notify("Adjusted zoom to {:.2f}".format(zoom_amount))
+
+    def CalculateZoomPeriodically(self, delay=5000):
+        while not monitor.abortRequested() and self.isPlayingVideo():
+                self.CalculateZoom()
+                self.logging_status = False
+                xbmc.sleep(delay)
 
     def showOriginal(self):
         if xbmcgui.Window(10000).getProperty("blackbarsnever_processing") != "true":
@@ -376,9 +387,7 @@ class Player(xbmc.Player):
 
         if self.enter_recalc_loop:
             # Loop for periodic recalculations if conditions are met
-            while not monitor.abortRequested() and self.isPlayingVideo():
-                self.CalculateZoom()
-                xbmc.sleep(5000)  # Wait for 5 seconds before potentially recalculating again
+            self.CalculateZoomPeriodically(5000)
         else:
             # Perform a single zoom calculation otherwise
             self.CalculateZoom()
