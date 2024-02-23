@@ -13,17 +13,21 @@ class Player(xbmc.Player):
         super().__init__()
         self.monitor = xbmc.Monitor()
         self.capture = xbmc.RenderCapture()
-        self.logging_status = True
+        self.resetAttributes()
 
         if "toggle" in sys.argv:
             self.toggleZoomAdjustment()
 
-    def onAVStarted(self):
+    def resetAttributes(self):
+        """Resets or initializes the player's attributes to their default values."""
         self.multi_ar = False
         self.imdb_data = None
         self.imdb_ar = None
         self.enter_recalc_loop = False
         self.logging_status = True
+
+    def onAVStarted(self):
+        self.resetAttributes()
 
         if xbmcaddon.Addon().getSetting("automatically_execute") == "true":
             self.abolishBlackBars()
@@ -71,7 +75,7 @@ class Player(xbmc.Player):
             video_player_width, video_player_height = monitor_width, monitor_height
             video_player_ar = float(xbmc.getInfoLabel('VideoPlayer.VideoAspect'))
 
-            if (monitor_ar > video_player_ar):
+            if monitor_ar > video_player_ar:
                 video_player_width = int(float(video_player_height) * video_player_ar)
             else:
                 video_player_height = int(float(video_player_width) / video_player_ar)
@@ -346,7 +350,6 @@ class Player(xbmc.Player):
     def showOriginal(self):
         if xbmcgui.Window(10000).getProperty("blackbarsnever_processing") != "true":
             xbmcgui.Window(10000).setProperty("blackbarsnever_processing", "true")
-            
             xbmcgui.Window(10000).setProperty("blackbarsnever_status", "off")
             xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0' + ' }}, "id": 1}'
@@ -358,7 +361,7 @@ class Player(xbmc.Player):
     def toggleZoomAdjustment(self):
         status = xbmcgui.Window(10000).getProperty("blackbarsnever_status")
         
-        if self.isPlayingVideo():
+        if not self.isPlayingVideo():
             notify("No video playing.")
             return
         
