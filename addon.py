@@ -11,9 +11,9 @@ def notify(msg):
 class Player(xbmc.Player):
     def __init__(self):
         super().__init__()
-        self._initialized = True
         self.monitor = xbmc.Monitor()
         self.capture = xbmc.RenderCapture()
+        self.logging_status = True
 
         if "toggle" in sys.argv:
             self.toggleZoomAdjustment()
@@ -357,6 +357,11 @@ class Player(xbmc.Player):
 
     def toggleZoomAdjustment(self):
         status = xbmcgui.Window(10000).getProperty("blackbarsnever_status")
+        
+        if self.isPlayingVideo():
+            notify("No video playing.")
+            return
+        
         if status == "on":
             self.showOriginal()
         else:
