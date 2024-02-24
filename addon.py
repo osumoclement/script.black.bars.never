@@ -67,8 +67,8 @@ class Player(xbmc.Player):
         return average_brightness, non_black_pixel_percentage
     
     def checkForBrightFrame(self, image_data, image_width, image_height):
-        brightness_threshold = 15.0
-        non_black_pixel_threshold = 0.50
+        brightness_threshold = 5.0
+        non_black_pixel_threshold = 0.60
         avg_brightness, non_black_pixel_percentage = self.calculateAverageBrightness(image_data, image_width, image_height)
         self.log(f"Average Brightness: {avg_brightness} Non-Black pixels Percentage: {non_black_pixel_percentage}", xbmc.LOGINFO)
         return avg_brightness >= brightness_threshold and non_black_pixel_percentage >= non_black_pixel_threshold
