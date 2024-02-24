@@ -41,20 +41,37 @@ class Player(xbmc.Player):
         capturedImage = self.capture.getImage(2000)
         return capturedImage
 
-    def calculateAverageBrightness(self, img_data, image_width, image_height):
+    def calculateAverageBrightness(self, img_data, image_width, image_height, non_black_pixel_threshold=0.01):
         total_brightness = 0
-        for i in range(0, len(img_data), 4):  # Step through each pixel
-            # Calculate brightness of each pixel, weighting coefficients of luminosity
-            brightness = 0.299*img_data[i+2] + 0.587*img_data[i+1] + 0.114*img_data[i]
-            total_brightness += brightness
-        average_brightness = total_brightness / (image_width * image_height)
-        return average_brightness
+        non_black_pixel_count = 0
+
+        for i in range(0, len(img_data), 4):
+            # Check if the pixel is not completely black
+            if not (img_data[i] == img_data[i+1] == img_data[i+2] == 0):
+                brightness = 0.299 * img_data[i+2] + 0.587 * img_data[i+1] + 0.114 * img_data[i]
+                total_brightness += brightness
+                non_black_pixel_count += 1
+
+        total_pixel_count = image_width * image_height
+        # Calculate the percentage of non-black pixels in the frame
+        non_black_pixel_percentage = non_black_pixel_count / total_pixel_count
+
+        # Check if the non-black pixel percentage meets the threshold
+        if non_black_pixel_percentage >= non_black_pixel_threshold:
+            # Calculate average brightness based on non-black pixels
+            average_brightness = total_brightness / non_black_pixel_count
+        else:
+            # Consider the frame as mostly black and ignore it for cropping decisions
+            average_brightness = 0.0
+
+        return average_brightness, non_black_pixel_percentage
     
     def checkForBrightFrame(self, image_data, image_width, image_height):
-        brightness_threshold = 32.0
-        avg_brightness = self.calculateAverageBrightness(image_data, image_width, image_height)
-        self.log(f"Average Brightness: {avg_brightness}", xbmc.LOGINFO)
-        return avg_brightness >= brightness_threshold
+        brightness_threshold = 15.0
+        non_black_pixel_threshold = 0.50
+        avg_brightness, non_black_pixel_percentage = self.calculateAverageBrightness(image_data, image_width, image_height)
+        self.log(f"Average Brightness: {avg_brightness} Non-Black pixels Percentage: {non_black_pixel_percentage}", xbmc.LOGINFO)
+        return avg_brightness >= brightness_threshold and non_black_pixel_percentage >= non_black_pixel_threshold
     
     def getMonitorSize(self):
         # Get the width and height of the current Kodi window
