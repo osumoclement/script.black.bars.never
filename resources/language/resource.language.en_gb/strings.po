@@ -41,3 +41,7 @@ msgstr "Workaround for Android & Embedded (requires internet)"
 msgctxt "#32006"
 msgid "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"
 msgstr "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"
+
+msgctxt "#32007"
+msgid "Auto-Refresh Interval"
+msgstr "Set the interval (in seconds) for how often the addon checks and adjusts the video playback to remove black bars."

@@ -23,12 +23,18 @@
                     <default>false</default>
                     <control type="toggle"/>
                 </setting>
+                <setting id="refresh_interval" type="slider" label="32007" help="" default="5">
+                    <level>0</level>
+                    <range>1,60</range> <!-- Adjust the range as needed -->
+                    <control type="slider" format="int"/>
+                </setting>
+                <setting id="separator" type="lsep" label="32008"/>
                 <setting id="toggle_test" type="action" label="32004" help="">
-	                <level>0</level>
-	                <data>RunScript(script.black.bars.never, toggle)</data>
-	                <control type="button" format="action">
-		            <close>true</close>
-	                </control>
+                    <level>0</level>
+                    <data>RunScript(script.black.bars.never, toggle)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
                 </setting>
             </group>
         </category>

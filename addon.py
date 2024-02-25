@@ -25,6 +25,7 @@ class Player(xbmc.Player):
         self.imdb_ar = None
         self.enter_recalc_loop = False
         self.logging_status = True
+        self.refresh_interval = int(self.addon.getSetting('refresh_interval'))
 
     def onAVStarted(self):
         self.resetAttributes()
@@ -215,8 +216,7 @@ class Player(xbmc.Player):
 
             if self.multi_ar:
                 self.log(f"Multiple aspect ratios detected from Imdb: {self.imdb_ar}", xbmc.LOGINFO)
-                if xbmcaddon.Addon().getSetting("show_notification") == "true":
-                    notify("Multiple aspect ratios detected")
+                notify("Multiple aspect ratios detected")
         except Exception as e:
             self.imdb_data = None
             self.imdb_ar = None
@@ -357,11 +357,11 @@ class Player(xbmc.Player):
                 # Notify the user of the action taken   
                 notify("Adjusted zoom to {:.2f}".format(zoom_amount))
 
-    def CalculateZoomPeriodically(self, delay=5):
+    def CalculateZoomPeriodically(self):
         while not self.monitor.abortRequested() and self.isPlayingVideo():
             self.CalculateZoom()
             self.logging_status = False
-            if self.monitor.waitForAbort(delay):
+            if self.monitor.waitForAbort(self.refresh_interval):
                 break
 
     def showOriginal(self):
