@@ -13,6 +13,7 @@ class Player(xbmc.Player):
         super().__init__()
         self.monitor = xbmc.Monitor()
         self.capture = xbmc.RenderCapture()
+        self.addon = xbmcaddon.Addon()
         self.resetAttributes()
 
         if "toggle" in sys.argv:
@@ -30,7 +31,7 @@ class Player(xbmc.Player):
     def onAVStarted(self):
         self.resetAttributes()
 
-        if xbmcaddon.Addon().getSetting("automatically_execute") == "true":
+        if self.addon.getSetting("automatically_execute") == "true":
             self.abolishBlackBars()
 
     def log(self, msg, level=xbmc.LOGINFO):
@@ -288,7 +289,7 @@ class Player(xbmc.Player):
         player_width, player_height = self.getVideoPlayerDimensions() 
         self.log(f"Video Player Aspect Ratio: {player_ar}", xbmc.LOGINFO)
 
-        use_workaround = xbmcaddon.Addon().getSetting("android_workaround") == "true"
+        use_workaround = self.addon.getSetting("android_workaround") == "true"
         content_width, content_height = None, None
 
         if use_workaround:
@@ -352,7 +353,7 @@ class Player(xbmc.Player):
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
         
-        if xbmcaddon.Addon().getSetting("show_notification") == "true" and not self.enter_recalc_loop:
+        if self.addon.getSetting("show_notification") == "true" and not self.enter_recalc_loop:
             if zoom_amount > 1.0:
                 # Notify the user of the action taken   
                 notify("Adjusted zoom to {:.2f}".format(zoom_amount))
@@ -396,10 +397,10 @@ class Player(xbmc.Player):
         xbmcgui.Window(10000).setProperty("blackbarsnever_status", "on")
         
         # Fetch IMDb metadata if multi-aspect ratios support is enabled or Android workaround is active
-        if xbmcaddon.Addon().getSetting("multi_aspect_ratios_support") == "true" or xbmcaddon.Addon().getSetting("android_workaround") == "true":
+        if self.addon.getSetting("multi_aspect_ratios_support") == "true" or self.addon.getSetting("android_workaround") == "true":
             self.getImdbMeta()
 
-        self.enter_recalc_loop = self.multi_ar and xbmcaddon.Addon().getSetting("android_workaround") == "false"
+        self.enter_recalc_loop = self.multi_ar and self.addon.getSetting("android_workaround") == "false"
 
         if self.enter_recalc_loop:
             # Loop for periodic recalculations if conditions are met

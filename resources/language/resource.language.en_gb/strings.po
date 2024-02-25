@@ -45,3 +45,15 @@ msgstr "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"
 msgctxt "#32007"
 msgid "Auto-Refresh Interval"
 msgstr "Set the interval (in seconds) for how often the addon checks and adjusts the video playback to remove black bars."
+
+msgctxt "#32008"
+msgid "Basic Settings"
+msgstr "Basic Settings"
+
+msgctxt "#32009"
+msgid "Advanced Settings"
+msgstr "Advanced Settings"
+
+msgctxt "#32010"
+msgid "Actions"
+msgstr "Actions"

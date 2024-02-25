@@ -1,42 +1,16 @@
-<?xml version="1.0" ?>
-<settings version="1">
-    <section id="script.black.bars.never">
-        <category help="" id="general" label="32001">
-            <group id="1">
-                <setting help="" id="automatically_execute" label="32002" type="boolean">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting help="" id="multi_aspect_ratios_support" label="32006" type="boolean">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting help="" id="show_notification" label="32003" type="boolean">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting help="" id="android_workaround" label="32005" type="boolean">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting id="refresh_interval" type="slider" label="32007" help="" default="5">
-                    <level>0</level>
-                    <range>1,60</range> <!-- Adjust the range as needed -->
-                    <control type="slider" format="int"/>
-                </setting>
-                <setting id="separator" type="lsep" label="32008"/>
-                <setting id="toggle_test" type="action" label="32004" help="">
-                    <level>0</level>
-                    <data>RunScript(script.black.bars.never, toggle)</data>
-                    <control type="button" format="action">
-                        <close>true</close>
-                    </control>
-                </setting>
-            </group>
-        </category>
-    </section>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="32001"> <!-- General Settings -->
+        <setting label="32008" type="lsep"/> <!-- Header: Basic Settings -->
+        <setting id="automatically_execute" type="bool" label="32002" default="true"/>
+        <setting id="show_notification" type="bool" label="32003" default="true"/>
+        
+        <setting label="32009" type="lsep"/> <!-- Header: Advanced Settings -->
+        <setting id="multi_aspect_ratios_support" type="bool" label="32006" default="false"/>
+        <setting id="android_workaround" type="bool" label="32005" default="false"/>
+        <setting id="refresh_interval" type="slider" option="int" range="1,15" label="32007" default="5"/>
+        
+        <setting label="32010" type="lsep"/> <!-- Header: Actions -->
+        <setting id="toggle_test" type="action" label="32004" action="RunScript(script.black.bars.never, toggle)"/>
+    </category>
 </settings>
