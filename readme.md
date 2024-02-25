@@ -1,16 +1,17 @@
 # BlackBarsNever Kodi Addon - Remove black bars
+
 Forked by Nircniv
+
 # How it works
 
-This is an addon that eliminates black bars on KODI, whether hardcoded or the video is just wide format
+`BlackBarsNever` is a Kodi addon designed to eliminate black bars from videos, whether they are hardcoded or due to the video being in a wide format. Once installed and enabled, the addon automatically analyzes media upon playback to detect black bars. If found, it zooms into the media just enough to fill the display without distorting the picture, as the zoom is applied linearly.
 
-With addon installed and enabled, it will automatically analyze media on playback and determine
-if there are any black bars. The addon will then zoom the media exactly enough to cover the display.
+# Key Features
 
-The picture will not be distorted in any way as the zoom is linear,
-however, on most media, small parts on the left and right will be cut off. Luckily, everything that's
-important tends to fall in the middle of the scene 99% of the time. The advantages of experiencing an
-immersive picture that fills the periphery should be enough to overweigh the disdvantage of missing sides.
+- **Automatic Detection and Adjustment:** The addon automatically detects black bars and adjusts the zoom level of the media to fill the display.
+- **IMDb Metadata Integration:** For media with multiple aspect ratios, the addon utilizes IMDb metadata to handle aspect ratios intelligently.
+- **Customization Options:** Users can customize the behaviour of the addon through its settings, including manual trigger options and the ability to toggle the addon's functionality.
+- **Support for Multiple Platforms:** The addon supports Linux, Windows, macOS, iOS, and Android & Embedded Systems (with certain limitations).
 
 # Supported platforms
 
@@ -21,7 +22,7 @@ immersive picture that fills the periphery should be enough to overweigh the dis
 
 # Android & Embedded Systems like \*ELEC
 
-Currently, Kodi can't capture sreenshots in Android and Embedded Systems if hardware accelertion is enabled due to some technical limitations. This may change in future and when that happens the addon will work properly like in other platforms. For now there's two options:
+Currently, Kodi cannot capture screenshots in Android and Embedded Systems if hardware acceleration is enabled due to some technical limitations. This may change in future and when that happens the addon will work properly like in other platforms. For now there's two options:
 
 1. Disable hardware acceleration (turn off MediaCodec Surface in Android). The problem with this is that Kodi will now use CPU for decoding and playback may be affected to the point of being unwatchable, especially for high bitrate media. Also in the devices I tested, HDR won't work on Android if hardware acceleration is turned on, I am not sure if this affects all of Android.
 
@@ -37,8 +38,8 @@ Feel free to ask any questions, submit feature/bug reports
 
 # Multiple Aspect Ratios in Media
 
-For media with multiple aspect ratios, the addon will notify you of this, and will do nothing. In such cases, I recommend you watch the media as is, since if you change the aspect ratio manually, you may not know where in the media the ratio changes in order to adjust again.
-This feature requires internet to work
+For media with multiple aspect ratios using the Android workaround method, the addon will notify you of this, and will do nothing. In such cases, I recommend you watch the media as is, since if you change the aspect ratio manually, you may not know where in the media the ratio changes in order to adjust again.
+This feature requires internet to work.
 
 # Customization
 
