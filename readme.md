@@ -26,6 +26,8 @@ Currently, Kodi cannot capture screenshots in Android and Embedded Systems if ha
 
 1. Disable hardware acceleration (turn off MediaCodec Surface in Android). The problem with this is that Kodi will now use CPU for decoding and playback may be affected to the point of being unwatchable, especially for high bitrate media. Also in the devices I tested, HDR won't work on Android if hardware acceleration is turned on, I am not sure if this affects all of Android.
 
+2. Enable the Android & Embedded Systems Workaround from the addon settings. This feature requires an internet connection to fetch media metadata, and works best if your library adopts a decent naming pattern i.e Title Year. Also works properly only if media aspect ratio is unchanged from original (i.e has not been cropped from the original)
+
 # Installation
 
 Download the zip file from [releases](https://github.com/ngtawei/script.black.bars.never/releases)
