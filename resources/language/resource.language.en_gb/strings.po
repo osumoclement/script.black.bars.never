@@ -35,8 +35,8 @@ msgid "Toggle status"
 msgstr "Toggle status"
 
 msgctxt "#32005"
-msgid "Workaround for Android & Embedded (requires internet)"
-msgstr "Workaround for Android & Embedded (requires internet)"
+msgid "Workaround for Android & Embedded"
+msgstr "Workaround for Android & Embedded"
 
 msgctxt "#32006"
 msgid "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"
@@ -51,8 +51,8 @@ msgid "Basic Settings"
 msgstr "Basic Settings"
 
 msgctxt "#32009"
-msgid "Advanced Settings"
-msgstr "Advanced Settings"
+msgid "Advanced Settings (Requires Internet)"
+msgstr "Advanced Settings (Requires Internet)"
 
 msgctxt "#32010"
 msgid "Actions"
