@@ -6,10 +6,9 @@ class ImdbScraper():
     HEADERS = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'}
     BASE_URL = "https://www.imdb.com/"
     
-    def __init__(self, title=None, media_type="tt", imdb_id=None):
+    def __init__(self):
         self.session = requests.Session()
         self.session.headers.update(self.HEADERS)
-        self.setMedia(title, media_type, imdb_id)
 
     def setMedia(self, title=None, media_type="tt", imdb_id=None):
         self.title = title
@@ -22,7 +21,7 @@ class ImdbScraper():
             self.imdb_id = self._parse_imdb_id()
         else:
             self.imdb_id = imdb_id
-
+    
     def _parse_imdb_id(self):
         SEARCH_URL = self.BASE_URL + "find/"
 
