@@ -13,6 +13,9 @@ class ConfigurationManager:
     def get_addon_name(self):
         return self.addon.getAddonInfo('name')
     
+    def get_addon_id(self):
+        return self.addon.getAddonInfo('id')
+    
     def get_addon_icon(self):
         return self.addon.getAddonInfo('icon')
     
