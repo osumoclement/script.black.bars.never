@@ -48,7 +48,7 @@ class ZoomService():
             )
         
         if config.get_setting("show_notification", bool) and not self.auto_refresh_status:
-            if zoom_amount > 1.0:  
+            if zoom_amount > 1.0:
                 notification.notify(f"Adjusted zoom to {zoom_amount}")
 
     def off_zoom(self):

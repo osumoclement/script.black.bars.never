@@ -8,4 +8,5 @@ notification = NotificationService()
 config.set_logger(logger)
 logger.set_addon_name(config.get_addon_name())
 notification.set_addon_name(config.get_addon_name())
+notification.set_addon_icon(config.get_addon_icon())
 

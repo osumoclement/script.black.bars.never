@@ -13,6 +13,9 @@ class ConfigurationManager:
     def get_addon_name(self):
         return self.addon.getAddonInfo('name')
     
+    def get_addon_icon(self):
+        return self.addon.getAddonInfo('icon')
+    
     def clear_property(self, property_id):
         self.window.clearProperty(self.get_addon_name() + "_" + property_id)
     
