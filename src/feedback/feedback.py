@@ -4,6 +4,7 @@ import xbmcgui
 class LoggingService():
     def __init__(self):
         self.status = True
+        self.addon_name = None
 
     def set_config(self, config):
         self.config = config
@@ -28,11 +29,13 @@ class LoggingService():
 class NotificationService():
     def __init__(self):
         self.status = True
+        self.addon_name = None
+        self.icon_path = None
 
     def set_config(self, config):
         self.config = config
         self.addon_name = self.config.get_addon_name()
-        self.icon_path = self.config.get_addon_id()
+        self.icon_path = self.config.get_addon_icon()
 
     def get_status(self):
         return self.status
@@ -44,7 +47,4 @@ class NotificationService():
             raise ValueError("Addon name has not been set.")
         
         if self.status or override:
-            if self.icon_path is not None:
-                xbmcgui.Dialog().notification(self.addon_name, msg, self.icon_path, 1000)
-            else:
-                xbmcgui.Dialog().notification(self.addon_name, msg, None, 1000)
+            xbmcgui.Dialog().notification(self.addon_name, msg, self.icon_path, 1000)
