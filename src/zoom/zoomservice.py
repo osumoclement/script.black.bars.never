@@ -33,31 +33,42 @@ class ZoomService():
     def auto_refresh_zoom(self):
         refresh_interval = config.get_setting("refresh_interval", int)
 
-        while not self.player.monitor.abortRequested() and self.player.isPlayingVideo():
+        while not self.player.monitor.abortRequested() and self.player.isPlayingVideo() and self.auto_refresh_status:
             self.execute_zoom()
             logger.off()
             if self.player.monitor.waitForAbort(refresh_interval):
-                self.auto_refresh_status = False
                 break
 
     def execute_zoom(self):
         zoom_amount = self._calculate_zoom()
+
+        if zoom_amount is None:
+            logger.log("Unable to calculate zoom", xbmc.LOGERROR)
+            notification.notify("Unable to calculate zoom", override=True)
+            return
+        
         # Execute the zoom via JSON-RPC
         xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
         
-        if config.get_setting("show_notification", bool) and not self.auto_refresh_status:
+        if not self.auto_refresh_status:
             if zoom_amount > 1.0:
                 notification.notify(f"Adjusted zoom to {zoom_amount}")
 
     def off_zoom(self):
+        self.auto_refresh_status = False
+
+        while config.get_property("processing"):
+            if self.player.monitor.waitForAbort(2):
+                return
+
         if not config.get_property("processing"):
             config.set_property("processing", True)
-            config.set_property("status", False)
             xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0' + ' }}, "id": 1}'
             )
+            config.set_property("status", False)
             notification.notify("Showing original aspect ratio", override=True)
             config.clear_property("processing")
 
@@ -65,7 +76,7 @@ class ZoomService():
         status = config.get_property("status")
 
         if not self.player.isPlayingVideo():
-            notification.notify("No video playing.")
+            notification.notify("No video playing.", override=True)
             return
         
         if status:
@@ -77,8 +88,7 @@ class ZoomService():
         content_width, content_height = self.content.get_content_size()
 
         if content_width is None or content_height is None:
-            logger.log("Unable to calculate zoom", xbmc.LOGERROR)
-            return
+            return None
         
         content_ar = self.content.get_content_ar()
         logger.log(f"Content Dimension: {content_width:.2f}x{content_height:.2f}, Content Aspect Ratio: {content_ar:.2f}:1", level=xbmc.LOGINFO)

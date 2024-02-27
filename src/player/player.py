@@ -8,7 +8,6 @@ class Player(xbmc.Player):
         self.monitor = xbmc.Monitor()
 
     def onAVStarted(self):
-        logger.on()
         self.reset_attributes()
 
         if config.get_setting("automatically_execute", bool):
@@ -19,6 +18,7 @@ class Player(xbmc.Player):
         self.zoom_service = zoom_service
 
     def reset_attributes(self):
+        logger.on()
         self.monitor_ar = None
         self.content.reset_attributes()
 

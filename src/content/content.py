@@ -48,7 +48,7 @@ class Content():
         return None
     
     def _calculate_content_image_size(self):
-        threshold = 4     # Above this value is "non-black"
+        threshold = 2     # Above this value is "non-black"
         offset = 2        # Offset start pixel to fix green line rendering bug
         bottom, right = self.image.image_height, self.image.image_width
 
