@@ -1,18 +1,21 @@
 import sys
-from src.globals import logger
-from src.app import zoom_service, player
+from src.core import core
+from src.handling import zoom_service
 
 def main():
     if "toggle" in sys.argv:
-        logger.log("Start Toggle.")
+        core.logger.log("Start Toggle.")
         zoom_service.toggle_zoom()
-        logger.log("End Toggle.")
+        core.logger.log("End Toggle.")
     else:
-        logger.log("Starting service.")
-        while not player.monitor.abortRequested():
-            if player.monitor.waitForAbort(10):
+        core.logger.log("Starting service.")
+        while not core.monitor.abortRequested():
+            if core.window.get_property("toggle_on"):
+                zoom_service.start_service()
+                core.window.clear_property("toggle_on")
+            if core.monitor.waitForAbort(1):
                 break
-        logger.log("Ending service.")
+        core.logger.log("Ending service.")
 
 if __name__ == "__main__":
     main()
