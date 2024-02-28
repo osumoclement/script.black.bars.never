@@ -71,8 +71,11 @@ class Player(xbmc.Player):
             title = xbmc.getInfoLabel('VideoPlayer.Title') or None
             content_type = 'tt' if xbmc.getInfoLabel('VideoPlayer.OriginalTitle') else 'ep' if xbmc.getInfoLabel('VideoPlayer.TVshowtitle') else None
             imdb_number = xbmc.getInfoLabel('VideoPlayer.IMDBNumber') or None
-            season = xbmc.getInfoLabel('VideoPlayer.Season') or None
-            episode = xbmc.getInfoLabel('VideoPlayer.Episode') or None
+            season = int(xbmc.getInfoLabel('VideoPlayer.Season')) or None
+            episode = int(xbmc.getInfoLabel('VideoPlayer.Episode')) or None
+
+            if season is not None and episode is not None:
+                content_type = 'ep'
 
             metadata = {
                 'title': title,
