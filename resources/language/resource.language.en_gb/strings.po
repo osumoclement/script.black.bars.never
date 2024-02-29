@@ -61,3 +61,7 @@ msgstr "Actions"
 msgctxt "#32011"
 msgid "Always Auto-Refresh"
 msgstr "Always Auto-Refresh"
+
+msgctxt "#32012"
+msgid "Sample resolution (Affects Performance/Accuracy)"
+msgstr "Sample resolution (Affects Performance/Accuracy)"

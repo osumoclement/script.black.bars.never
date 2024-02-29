@@ -37,7 +37,7 @@ class ContentManager:
         video_w, video_h = self.player.get_video_size()
         player_width, player_height = self.player.get_video_player_size()
         player_ar = self.player.get_video_player_ar()
-        image_height = 480
+        image_height = 480 * core.addon.get_setting("sample_resolution", float)
         image_width = int(image_height*player_ar)
         core.logger.log(f"Video Resolution: {video_w}x{video_h}, Video Player Aspect Ratio: {player_ar}, Image Dimensions: {image_width}x{image_height}", xbmc.LOGINFO)
 
