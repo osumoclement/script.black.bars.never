@@ -4,10 +4,10 @@
         <setting label="32008" type="lsep"/> <!-- Header: Basic Settings -->
         <setting id="automatically_execute" type="bool" label="32002" default="true"/>
         <setting id="show_notification" type="bool" label="32003" default="true"/>
-        <setting id="android_workaround" type="bool" label="32005" default="false"/>
         
         <setting label="32009" type="lsep"/> <!-- Header: Advanced Settings -->
-        <setting id="multi_aspect_ratios_support" type="bool" label="32006" default="false"/>
+        <setting id="android_workaround" type="bool" label="32005" default="false"/>
+        <setting id="multi_aspect_ratios_support" type="bool" label="32006" enable="eq(-1,false)" default="false"/>
         <setting id="always_refresh" type="bool" label="32011" subsetting="true" enable="eq(-1,true)" default="false"/>
         <setting id="refresh_interval" type="slider" option="int" range="1,15" label="32007" subsetting="true" visible="eq(-2,true)" default="5"/>
         <setting id="sample_resolution" type="slider" option="float" range="0.5,0.1,1.0" label="32012" subsetting="true" visible="eq(-3,true)" default="1.0"/>
