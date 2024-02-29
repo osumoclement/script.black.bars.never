@@ -75,7 +75,7 @@ class NotificationManager:
     def notify(self, msg, override=False):
         self.notification_status = self.__addon.get_setting("show_notification", bool)
 
-        if (self.notification_status or override) and self.status:
+        if (self.notification_status and self.status) or override:
             xbmcgui.Dialog().notification(self.__addon.addon_name, msg, self.__addon.addon_icon, 1000)
 
 
