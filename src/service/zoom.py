@@ -35,7 +35,7 @@ class ZoomService:
             if self.content.multi_ar:
                 core.notification.notify("Multiple aspect ratios detected", override=True)
 
-            self.auto_refresh_status = self.content.multi_ar and not core.addon.get_setting("android_workaround", bool)
+            self.auto_refresh_status = (self.content.multi_ar and not core.addon.get_setting("android_workaround", bool)) or core.addon.get_setting("always_refresh", bool)
 
             if self.auto_refresh_status:
                 self.auto_refresh_zoom()

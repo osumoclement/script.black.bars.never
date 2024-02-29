@@ -57,3 +57,7 @@ msgstr "Advanced Settings (Requires Internet)"
 msgctxt "#32010"
 msgid "Actions"
 msgstr "Actions"
+
+msgctxt "#32011"
+msgid "Always Auto-Refresh"
+msgstr "Always Auto-Refresh"

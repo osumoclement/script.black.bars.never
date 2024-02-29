@@ -56,7 +56,7 @@ class ImageAnalysisService:
         return None
     
     def calculate_content_image_size(self):
-        threshold = 2     # Above this value is "non-black"
+        threshold = 1     # Above this value is "non-black"
         offset = 2        # Offset start pixel to fix green line rendering bug
         bottom, right = self.image.height, self.image.width
 
