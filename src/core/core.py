@@ -64,11 +64,18 @@ class WindowManager:
 class NotificationManager:
     def __init__(self, addon: AddonManager):
         self.__addon = addon
+        self.status = True
+
+    def on(self):
+        self.status = True
+
+    def off(self):
+        self.status = False
 
     def notify(self, msg, override=False):
         self.notification_status = self.__addon.get_setting("show_notification", bool)
 
-        if self.notification_status or override:
+        if (self.notification_status or override) and self.status:
             xbmcgui.Dialog().notification(self.__addon.addon_name, msg, self.__addon.addon_icon, 1000)
 
 

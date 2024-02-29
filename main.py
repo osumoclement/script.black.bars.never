@@ -10,9 +10,8 @@ def main():
     else:
         core.logger.log("Starting service.")
         while not core.monitor.abortRequested():
-            if core.window.get_property("toggle_on"):
-                zoom_service.start_service()
-                core.window.clear_property("toggle_on")
+            zoom_service.check_toggle_service("on")
+            zoom_service.check_toggle_service("off")
             if core.monitor.waitForAbort(1):
                 break
         core.logger.log("Ending service.")

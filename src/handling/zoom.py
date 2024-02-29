@@ -14,6 +14,7 @@ class ZoomService:
     def reset_attributes(self):
         self.auto_refresh_status = False
         core.logger.on()
+        core.notification.on()
         self.content.reset_attributes()
         self.player.reset_attributes()
 
@@ -43,12 +44,26 @@ class ZoomService:
         core.window.clear_property("processing")
         core.window.set_property("status", False)
 
+    def check_toggle_service(self, status: str):
+        if status == "on":
+            if core.window.get_property("toggle_on"):
+                    self.start_service()
+                    core.window.clear_property("toggle_on")
+                    return True
+        elif status == "off":
+            if core.window.get_property("toggle_off"):
+                    self.off_zoom()
+                    core.window.clear_property("toggle_off")
+                    return True
+        return False
+
     def auto_refresh_zoom(self):
         refresh_interval = core.addon.get_setting("refresh_interval", int)
         check_interval = 1  # How often to check the conditions in seconds
 
         while not core.monitor.abortRequested() and self.player.isPlayingVideo() and self.auto_refresh_status:
             self.execute_zoom()
+            core.notification.off()
             core.logger.off()
 
             start_time = time.time()  # Record start time of the interval
@@ -58,9 +73,7 @@ class ZoomService:
                 elapsed = current_time - start_time
                 remaining_time = refresh_interval - elapsed
 
-                if core.window.get_property("toggle_off"):
-                    self.off_zoom()
-                    core.window.clear_property("toggle_off")
+                if self.check_toggle_service("off"):
                     break
                 
                 if remaining_time <= 0:
@@ -72,7 +85,7 @@ class ZoomService:
             
             if core.monitor.abortRequested():
                 break
-
+        
         core.logger.log("Exiting auto refresh zoom loop.", xbmc.LOGINFO)
 
     def execute_zoom(self):
@@ -88,9 +101,8 @@ class ZoomService:
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
         
-        if not self.auto_refresh_status:
-            if zoom_amount > 1.0:
-                core.notification.notify(f"Adjusted zoom to {zoom_amount}")
+        if zoom_amount > 1.0:
+            core.notification.notify(f"Adjusted zoom to {zoom_amount}")
 
     def off_zoom(self):
         self.reset_attributes()
@@ -101,13 +113,11 @@ class ZoomService:
         core.notification.notify("Showing original aspect ratio", override=True)
 
     def toggle_zoom(self):
-        status = core.window.get_property("status")
-        
         if not self.player.isPlayingVideo():
             core.notification.notify("No video playing.", override=True)
             return
         
-        if status:
+        if core.window.get_property("status"):
             core.window.set_property("toggle_off", True)
         else:
             core.window.set_property("toggle_on", True)
