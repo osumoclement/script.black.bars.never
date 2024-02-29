@@ -42,7 +42,6 @@ class ZoomService:
             self.execute_zoom()
             
         core.window.clear_property("processing")
-        core.window.set_property("status", False)
 
     def check_toggle_service(self, status: str):
         if status == "on":
@@ -110,6 +109,7 @@ class ZoomService:
         xbmc.executeJSONRPC(
             '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": 1.0' + ' }}, "id": 1}'
         )
+        core.window.set_property("status", False)
         core.notification.notify("Showing original aspect ratio", override=True)
 
     def toggle_zoom(self):
