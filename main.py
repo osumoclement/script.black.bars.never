@@ -1,6 +1,6 @@
 import sys
 from src.core import core
-from src.handling import zoom_service
+from src.service import zoom_service
 
 def main():
     if "toggle" in sys.argv:

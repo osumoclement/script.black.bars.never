@@ -24,22 +24,25 @@ class ZoomService:
         
         core.window.set_property("processing", True)
         core.window.set_property("status", True)
+        
+        try:
+            self.reset_attributes()
 
-        self.reset_attributes()
+            # Fetch IMDb metadata if multi-aspect ratios support is enabled or Android workaround is active
+            if core.addon.get_setting("multi_aspect_ratios_support", bool) or core.addon.get_setting("android_workaround", bool):
+                self.content.fetch_online_metadata()
 
-        # Fetch IMDb metadata if multi-aspect ratios support is enabled or Android workaround is active
-        if core.addon.get_setting("multi_aspect_ratios_support", bool) or core.addon.get_setting("android_workaround", bool):
-            self.content.get_online_metadata()
+            if self.content.multi_ar:
+                core.notification.notify("Multiple aspect ratios detected", override=True)
 
-        if self.content.multi_ar:
-            core.notification.notify("Multiple aspect ratios detected", override=True)
+            self.auto_refresh_status = self.content.multi_ar and not core.addon.get_setting("android_workaround", bool)
 
-        self.auto_refresh_status = self.content.multi_ar and not core.addon.get_setting("android_workaround", bool)
-
-        if self.auto_refresh_status:
-            self.auto_refresh_zoom()
-        else:
-            self.execute_zoom()
+            if self.auto_refresh_status:
+                self.auto_refresh_zoom()
+            else:
+                self.execute_zoom()
+        except Exception as e:
+            core.logger.log(e, xbmc.LOGERROR)
             
         core.window.clear_property("processing")
 

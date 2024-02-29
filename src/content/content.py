@@ -19,8 +19,12 @@ class ContentManager:
         self.multi_ar = False
         self.online_metadata = None
 
-    def get_online_metadata(self):
+    def fetch_online_metadata(self):
         self.online_metadata = self.online_metadata_service.scrape_metadata(self.player.get_video_metadata())
+
+        if self.online_metadata is None:
+            return
+        
         self.content_ars = self.online_metadata["aspect_ratios"]
         self.multi_ar = len(self.content_ars) > 1
 
@@ -64,6 +68,10 @@ class ContentManager:
     def _get_content_size_from_data(self):
         player_width, player_height = self.player.get_video_player_size()
         player_ar = self.player.get_video_player_ar()
+
+        if self.content_ars is None:
+            core.logger.log("Unable to get aspect ratios online.", xbmc.LOGERROR)
+            return None, None
         
         if self.multi_ar:
             content_width = player_width
@@ -93,7 +101,7 @@ class ContentManager:
             try:
                 self.content_ar = content_width / content_height
             except Exception as e:
-                core.logger.log(e)
+                core.logger.log(e, xbmc.LOGERROR)
                 return None, None
 
         return content_width, content_height
