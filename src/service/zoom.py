@@ -103,6 +103,8 @@ class ZoomService:
                 '{"jsonrpc": "2.0", "method": "Player.SetViewMode", "params": {"viewmode": {"zoom": ' + str(zoom_amount) + ' }}, "id": 1}'
             )
         
+        core.window.set_property("status", False)
+        
         if zoom_amount > 1.0:
             core.notification.notify(f"Adjusted zoom to {zoom_amount}")
 
