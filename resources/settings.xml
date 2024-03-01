@@ -1,26 +1,18 @@
-<?xml version="1.0" ?>
-<settings version="1">
-    <section id="script.black.bars.never">
-        <category help="" id="general" label="32001">
-            <group id="1">
-                <setting help="" id="automatically_execute" label="32002" type="boolean">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting id="toggle_test" type="action" label="32003" help="">
-	                <level>0</level>
-	                <data>RunScript(script.black.bars.never, toggle)</data>
-	                <control type="button" format="action">
-		            <close>true</close>
-	                </control>
-                </setting>
-                <setting help="" id="android_workaround" label="32004" type="boolean">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle"/>
-                </setting>
-            </group>
-        </category>
-    </section>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="32001"> <!-- General Settings -->
+        <setting label="32008" type="lsep"/> <!-- Header: Basic Settings -->
+        <setting id="automatically_execute" type="bool" label="32002" default="true"/>
+        <setting id="show_notification" type="bool" label="32003" default="true"/>
+        
+        <setting label="32009" type="lsep"/> <!-- Header: Advanced Settings -->
+        <setting id="android_workaround" type="bool" label="32005" enable="eq(1,false)" default="false"/>
+        <setting id="multi_aspect_ratios_support" type="bool" label="32006" enable="eq(-1,false)" default="false"/>
+        <setting id="always_refresh" type="bool" label="32011" subsetting="true" visible="eq(-1,true)" default="false"/>
+        <setting id="refresh_interval" type="slider" option="int" range="1,15" label="32007" subsetting="true" visible="eq(-2,true)" default="5"/>
+        <setting id="sample_resolution" type="slider" option="float" range="0.5,0.1,1.0" label="32012" subsetting="true" visible="eq(-3,true)" default="1.0"/>
+        
+        <setting label="32010" type="lsep"/> <!-- Header: Actions -->
+        <setting id="toggle_test" type="action" label="32004" action="RunScript(script.black.bars.never, toggle)"/>
+    </category>
 </settings>

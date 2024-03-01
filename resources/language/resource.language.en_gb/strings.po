@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Black Bars Never\n"
-"Report-Msgid-Bugs-To: Clement Osumo\n"
+"Report-Msgid-Bugs-To: Nircniv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2023-06-18 10:08+0000\n"
 "Last-Translator: Clement Osumo\n"
@@ -27,9 +27,41 @@ msgid "Automatically remove black bars"
 msgstr "Automatically remove black bars"
 
 msgctxt "#32003"
+msgid "Show notifications"
+msgstr "Show notifications"
+
+msgctxt "#32004"
 msgid "Toggle status"
 msgstr "Toggle status"
 
-msgctxt "#32004"
-msgid "Workaround for Android & Embedded (requires internet)"
-msgstr "Workaround for Android & Embedded (requires internet)"
+msgctxt "#32005"
+msgid "Workaround for Android & Embedded"
+msgstr "Workaround for Android & Embedded"
+
+msgctxt "#32006"
+msgid "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"
+msgstr "Auto-Refresh Zoom for Multiple Aspect Ratios (High Resource Use)"
+
+msgctxt "#32007"
+msgid "Auto-Refresh Interval"
+msgstr "Set the interval (in seconds) for how often the addon checks and adjusts the video playback to remove black bars."
+
+msgctxt "#32008"
+msgid "Basic Settings"
+msgstr "Basic Settings"
+
+msgctxt "#32009"
+msgid "Advanced Settings (Requires Internet)"
+msgstr "Advanced Settings (Requires Internet)"
+
+msgctxt "#32010"
+msgid "Actions"
+msgstr "Actions"
+
+msgctxt "#32011"
+msgid "Always Auto-Refresh"
+msgstr "Always Auto-Refresh"
+
+msgctxt "#32012"
+msgid "Sample resolution (Affects Performance/Accuracy)"
+msgstr "Sample resolution (Affects Performance/Accuracy)"
