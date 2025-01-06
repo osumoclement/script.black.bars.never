@@ -138,7 +138,8 @@ class Player(xbmc.Player):
                     .split(".", 1)[0]
                 )
 
-        original_aspect_ratio = getOriginalAspectRatio(title, imdb_number=imdb_number)
+        if android_workaround:
+            original_aspect_ratio = getOriginalAspectRatio(title, imdb_number=imdb_number)
 
         if isinstance(original_aspect_ratio, list):
             # media has multiple aspect ratios, show unaltered and let user do manual intervention
