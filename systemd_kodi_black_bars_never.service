@@ -1,0 +1,14 @@
+[Unit]
+Description=Identify crop parameters for Kodi videos
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/user/external_mpv_manager.py --headless --mount-paths /mnt/WesternDigital/ --split-paths /webdav/
+User=your_username
+Group=your_group
+Environment=WAYLAND_DISPLAY=wayland-0
+# This points to the directory containing the wayland socket
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+[Install]
+WantedBy=multi-user.target

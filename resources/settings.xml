@@ -9,16 +9,25 @@
                     <control type="toggle"/>
                 </setting>
                 <setting id="toggle_test" type="action" label="32003" help="">
-	                <level>0</level>
-	                <data>RunScript(script.black.bars.never, toggle)</data>
-	                <control type="button" format="action">
-		            <close>true</close>
-	                </control>
+                    <level>0</level>
+                    <data>RunScript(script.black.bars.never, toggle)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
                 </setting>
-                <setting help="" id="android_workaround" label="32004" type="boolean">
+                <setting help="" id="use_external_mpv" label="32005" type="boolean">
                     <level>0</level>
                     <default>false</default>
                     <control type="toggle"/>
+                </setting>
+                <!-- New IP Address Field -->
+                <setting id="mpv_host" type="string" label="MPV Host IP" help="Enter the IP address of the machine running the MPV manager">
+                    <level>0</level>
+                    <default>127.0.0.1</default>
+                    <control type="edit" format="string"/>
+                    <dependencies>
+                        <dependency type="visible" setting="use_external_mpv">true</dependency>
+                    </dependencies>
                 </setting>
             </group>
         </category>

@@ -33,3 +33,7 @@ msgstr "Toggle status"
 msgctxt "#32004"
 msgid "Workaround for Android & Embedded (requires internet)"
 msgstr "Workaround for Android & Embedded (requires internet)"
+
+msgctxt "#32005"
+msgid "Use external MPV (ffmpeg) to detect crop parameters"
+msgstr "Use external MPV (ffmpeg) to detect crop parameters"
